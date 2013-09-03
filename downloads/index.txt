@@ -1,0 +1,9 @@
+The RESTQueue deployments are in this directory.
+
+The RESTQueue application (run once to generate the server and messaging channels):
+
+RestQueueApp-1.0-jar-with-dependencies.jar uploaded on [date]
+
+The RESTQueue framework library (contains all you need to run the server and to write Java messaging client code easily):
+
+RestQueueLib-1.0-jar-with-dependencies.jar uploaded on [date]
