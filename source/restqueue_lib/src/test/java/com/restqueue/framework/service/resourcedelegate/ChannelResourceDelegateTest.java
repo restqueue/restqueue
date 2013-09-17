@@ -14,6 +14,7 @@ import com.restqueue.framework.service.transport.ServiceResponse;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class ChannelResourceDelegateTest {
         final String fullRegistrationUrl = "/channel/messagelisteners";
 
         final ServiceRequest.ServiceRequestBuilder builder = new ServiceRequest.ServiceRequestBuilder();
-        builder.setMediaTypeRequested("application/xml");
+        builder.setMediaTypeRequested(MediaType.APPLICATION_XML);
 
         final ServiceHeaders.ServiceHeadersBuilder headersBuilder = new ServiceHeaders.ServiceHeadersBuilder();
 
@@ -90,7 +91,7 @@ public class ChannelResourceDelegateTest {
         final String fullRegistrationUrl = "/channel/messagelisteners";
 
         final ServiceRequest.ServiceRequestBuilder builder = new ServiceRequest.ServiceRequestBuilder();
-        builder.setMediaTypeRequested("application/xml");
+        builder.setMediaTypeRequested(MediaType.APPLICATION_XML);
 
         final ServiceHeaders.ServiceHeadersBuilder headersBuilder = new ServiceHeaders.ServiceHeadersBuilder();
 
@@ -110,7 +111,7 @@ public class ChannelResourceDelegateTest {
         channelResourceDelegate.registerMessageListener(serviceRequest);
 
         final ServiceRequest.ServiceRequestBuilder builderForUnregistration = new ServiceRequest.ServiceRequestBuilder();
-        builderForUnregistration.setMediaTypeRequested("application/xml");
+        builderForUnregistration.setMediaTypeRequested(MediaType.APPLICATION_XML);
 
         builder.addParameter("fullRegistrationUrl", fullRegistrationUrl+"/listener1");
         builder.addParameter("registrationUrl", fullRegistrationUrl);
@@ -133,7 +134,7 @@ public class ChannelResourceDelegateTest {
         final String fullRegistrationUrl = "/channel/messagelisteners";
 
         final ServiceRequest.ServiceRequestBuilder builder = new ServiceRequest.ServiceRequestBuilder();
-        builder.setMediaTypeRequested("application/xml");
+        builder.setMediaTypeRequested(MediaType.APPLICATION_XML);
 
         final ServiceHeaders.ServiceHeadersBuilder headersBuilder = new ServiceHeaders.ServiceHeadersBuilder();
 
@@ -153,7 +154,7 @@ public class ChannelResourceDelegateTest {
         channelResourceDelegate.registerMessageListener(serviceRequest);
 
         final ServiceRequest.ServiceRequestBuilder builderForUnregistration = new ServiceRequest.ServiceRequestBuilder();
-        builderForUnregistration.setMediaTypeRequested("application/xml");
+        builderForUnregistration.setMediaTypeRequested(MediaType.APPLICATION_XML);
 
         builder.addParameter("fullRegistrationUrl", fullRegistrationUrl+"/nonExistingListener");
         builder.addParameter("registrationUrl", fullRegistrationUrl);
@@ -176,7 +177,7 @@ public class ChannelResourceDelegateTest {
         final String fullRegistrationUrl = "/channel/messagelisteners";
 
         final ServiceRequest.ServiceRequestBuilder builder = new ServiceRequest.ServiceRequestBuilder();
-        builder.setMediaTypeRequested("application/xml");
+        builder.setMediaTypeRequested(MediaType.APPLICATION_XML);
 
         final ServiceHeaders.ServiceHeadersBuilder headersBuilder = new ServiceHeaders.ServiceHeadersBuilder();
 
@@ -196,7 +197,7 @@ public class ChannelResourceDelegateTest {
         channelResourceDelegate.registerMessageListener(serviceRequest);
 
         final ServiceRequest.ServiceRequestBuilder builderForUnregistration = new ServiceRequest.ServiceRequestBuilder();
-        builderForUnregistration.setMediaTypeRequested("application/xml");
+        builderForUnregistration.setMediaTypeRequested(MediaType.APPLICATION_XML);
 
         builder.addParameter("fullRegistrationUrl", fullRegistrationUrl+"/listener1");
         builder.addParameter("registrationUrl", fullRegistrationUrl);

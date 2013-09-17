@@ -8,14 +8,18 @@ import com.restqueue.framework.service.backingstorefilters.BatchingFilter;
 import com.restqueue.framework.service.backingstorefilters.CompleteBatchFilter;
 import com.restqueue.framework.service.backingstorefilters.SpecificPriorityFilter;
 import com.restqueue.framework.service.channelstate.BatchStrategy;
-import com.restqueue.framework.service.entrywrappers.EntrySummary;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntrySummary;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.notification.MessageListenerAddress;
 import com.restqueue.framework.service.notification.MessageListenerGroup;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
+import javax.ws.rs.core.MediaType;
+
 /**
+ * This class is used to serialize and de-serialize the channel contents and messages.<BR/><BR/>
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,11 +52,21 @@ public class Serializer {
         return xStream.fromXML(xml);
     }
 
+    /**
+     * This method de-serializes String content assuming the provided mime type. The currently supported mime types
+     * (see <A href="http://en.wikipedia.org/wiki/Internet_media_type">http://en.wikipedia.org/wiki/Internet_media_type</A>)
+     * are:
+     * <UL><LI>application/xml</LI><LI>application/json</LI></UL>
+     *
+     * @param content The serialized String content
+     * @param toType The mime type to de-serialize using
+     * @return The de-serialized Object
+     */
     public Object fromType(String content, String toType){
-        if("application/xml".equals(toType)){
+        if(MediaType.APPLICATION_XML.equals(toType)){
             return fromXml(content);
         }
-        if("application/json".equals(toType)){
+        if(MediaType.APPLICATION_JSON.equals(toType)){
             return fromJson(content);
         }
         return null;
@@ -75,11 +89,21 @@ public class Serializer {
         return htmlSerializer.serialize(object, arguments);
     }
 
+    /**
+     * This method serializes an Object using the provided mime type. The currently supported mime types
+     * (see <A href="http://en.wikipedia.org/wiki/Internet_media_type">http://en.wikipedia.org/wiki/Internet_media_type</A>)
+     * are:
+     * <UL><LI>application/xml</LI><LI>application/json</LI></UL>
+     *
+     * @param object The Object to serialize
+     * @param toType The mime type to serialize using
+     * @return The serialized object as a String
+     */
     public String toType(Object object, String toType, final String... arguments){
-        if("application/xml".equals(toType)){
+        if(MediaType.APPLICATION_XML.equals(toType)){
             return toXml(object);
         }
-        if("application/json".equals(toType)){
+        if(MediaType.APPLICATION_JSON.equals(toType)){
             return toJson(object);
         }
         if("text/html".equals(toType)){

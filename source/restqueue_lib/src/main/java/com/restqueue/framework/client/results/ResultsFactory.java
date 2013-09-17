@@ -8,12 +8,15 @@ import com.restqueue.framework.common.utils.HttpUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * This is the Factory to build up the Result implementations.<BR/><BR/>
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +44,7 @@ public class ResultsFactory {
         creationResult.setBody(stringBody);
         creationResult.setResponseCode(httpResponse.getStatusLine().getStatusCode());
         if (!creationResult.isSuccess() && stringBody.startsWith("{error")) {
-            creationResult.setException((HttpResponseErrorBean)new Serializer().fromType(stringBody,"application/json"));
+            creationResult.setException((HttpResponseErrorBean)new Serializer().fromType(stringBody, MediaType.APPLICATION_JSON));
         }
 
         return creationResult;
@@ -56,7 +59,7 @@ public class ResultsFactory {
         conditionalPutResult.setBody(stringBody);
         conditionalPutResult.setResponseCode(httpResponse.getStatusLine().getStatusCode());
         if (!conditionalPutResult.isSuccess() && stringBody.startsWith("{error")) {
-            conditionalPutResult.setException((HttpResponseErrorBean)new Serializer().fromType(stringBody,"application/json"));
+            conditionalPutResult.setException((HttpResponseErrorBean)new Serializer().fromType(stringBody,MediaType.APPLICATION_JSON));
         }
 
         return conditionalPutResult;
@@ -82,7 +85,7 @@ public class ResultsFactory {
         }
 
         if (!retrievalResult.isSuccess() && stringBody.startsWith("{error")) {
-            retrievalResult.setException((HttpResponseErrorBean)new Serializer().fromType(stringBody,"application/json"));
+            retrievalResult.setException((HttpResponseErrorBean)new Serializer().fromType(stringBody,MediaType.APPLICATION_JSON));
         }
 
         return retrievalResult;
@@ -95,7 +98,7 @@ public class ResultsFactory {
         final String stringBody = extractStringBody(getContentFromResponse(httpResponse));
         executionResult.setResponseCode(httpResponse.getStatusLine().getStatusCode());
         if (!executionResult.isSuccess() && stringBody.startsWith("{error")) {
-            executionResult.setException((HttpResponseErrorBean)new Serializer().fromType(stringBody,"application/json"));
+            executionResult.setException((HttpResponseErrorBean)new Serializer().fromType(stringBody,MediaType.APPLICATION_JSON));
         }
 
         return executionResult;

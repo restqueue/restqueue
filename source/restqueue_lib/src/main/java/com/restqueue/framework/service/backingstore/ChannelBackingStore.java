@@ -8,12 +8,11 @@ import com.restqueue.framework.service.backingstorefilters.BatchingFilter;
 import com.restqueue.framework.service.backingstorefilters.PriorityDescendingFilter;
 import com.restqueue.framework.service.backingstorefilters.SpecificPriorityFilter;
 import com.restqueue.framework.service.channelstate.ChannelState;
-import com.restqueue.framework.service.entrywrappers.EntrySummary;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntrySummary;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.exception.ChannelStoreException;
 import com.restqueue.framework.service.exception.SerializationException;
-import com.restqueue.framework.service.persistence.Persistence;
-import com.restqueue.framework.service.persistence.PersistenceProvider;
+import com.restqueue.framework.service.persistence.*;
 import com.restqueue.framework.service.transport.ServiceRequest;
 import org.apache.log4j.Logger;
 
@@ -51,6 +50,7 @@ public final class ChannelBackingStore {
     private static final Logger log = Logger.getLogger(ChannelBackingStore.class);
 
     private Persistence persistence;
+    private Snapshot snapshot;
 
     private ChannelBackingStore(BackingStoreFilter backingStoreFilter, BackingStoreDuplicatesFilter backingStoreDuplicatesFilter,
                                 Class associatedChannelResourceClazz) {
@@ -59,6 +59,8 @@ public final class ChannelBackingStore {
         this.associatedChannelResourceClazz = associatedChannelResourceClazz;
 
         persistence = PersistenceProvider.getPersistenceImplementationBasedOnProgramArguments();
+
+        snapshot = new SnapshotImpl();
 
         lastUpdated=System.currentTimeMillis();
     }
@@ -227,7 +229,7 @@ public final class ChannelBackingStore {
 
     private void restoreContentsSnapshotIntoList(final List<EntryWrapper> listToRestoreInto, String snapshotId){
         listToRestoreInto.clear();
-        listToRestoreInto.addAll(persistence.loadChannelContentsSnapshot(associatedChannelResourceClazz, snapshotId));
+        listToRestoreInto.addAll(snapshot.loadChannelContentsSnapshot(associatedChannelResourceClazz, snapshotId));
     }
 
     public void persist(){
@@ -239,9 +241,9 @@ public final class ChannelBackingStore {
     }
 
     public String takeSnapshot(){
-        final String snapshotId = new SimpleDateFormat(persistence.getDateFormatForSnapshotId()).format(new Date());
+        final String snapshotId = new SimpleDateFormat(snapshot.getDateFormatForSnapshotId()).format(new Date());
         updateChannelState();
-        persistence.takeChannelSnapshot(associatedChannelResourceClazz, toList(), channelState, snapshotId);
+        snapshot.takeChannelSnapshot(associatedChannelResourceClazz, toList(), channelState, snapshotId);
         return snapshotId;
     }
 
@@ -358,11 +360,11 @@ public final class ChannelBackingStore {
     }
 
     public List<String> serializeSnapshotListToType() {
-        return persistence.getSnapshotList(associatedChannelResourceClazz);
+        return snapshot.getSnapshotList(associatedChannelResourceClazz);
     }
 
     public String restoreFromSnapshot(final String snapshotId) {
-        persistence.overwriteCurrentDataWithSnapshot(associatedChannelResourceClazz, snapshotId);
+        snapshot.overwriteCurrentDataWithSnapshot(associatedChannelResourceClazz, snapshotId);
 
         //force a restore from working directory
         restoreFromPersistedState();

@@ -1,7 +1,7 @@
 package com.restqueue.framework.service.persistence;
 
 import com.restqueue.framework.service.channelstate.ChannelState;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.notification.MessageListenerAddress;
 import com.restqueue.framework.service.notification.MessageListenerGroup;
 
@@ -41,21 +41,6 @@ public interface Persistence {
 
     public ChannelState loadChannelState(final Class associatedChannelResourceClazz);
 
-    public void takeChannelSnapshot(final Class associatedChannelResourceClazz, final List<EntryWrapper> channelContents,
-                                    final ChannelState channelState, final String snapshotId);
-
-    public void takeListenerSnapshot(final Class associatedChannelResourceClazz, final Map<String, MessageListenerAddress> listenerAddresses,
-                                     Map<String, MessageListenerGroup> listenerRegistration, final String snapshotId);
-
     public List<EntryWrapper> loadChannelContents(final Class associatedChannelResourceClazz);
 
-    public List<EntryWrapper> loadChannelContentsSnapshot(final Class associatedChannelResourceClazz, final String snapshotId);
-
-    public void overwriteCurrentDataWithSnapshot(final Class associatedChannelResourceClazz, final String snapshotId);
-
-    public void overwriteCurrentListenerDataWithSnapshot(final Class associatedChannelResourceClazz, final String snapshotId);
-
-    public List<String> getSnapshotList(final Class associatedChannelResourceClazz);
-
-    public String getDateFormatForSnapshotId();
 }

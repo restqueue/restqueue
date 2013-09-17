@@ -12,9 +12,8 @@ import com.restqueue.framework.client.results.ExecutionResult;
 import com.restqueue.framework.client.results.Result;
 import com.restqueue.framework.client.results.ResultsFactory;
 import com.restqueue.framework.client.results.RetrievalResult;
-import com.restqueue.framework.service.entrywrappers.EntrySummary;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
-import com.restqueue.framework.service.server.AbstractServer;
+import com.restqueue.framework.client.entrywrappers.EntrySummary;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.ClientProtocolException;
@@ -34,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * This class encapsulates the functionality that a message consumer would need when dealing with messages on a channel.<BR/><BR/>
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,7 +54,7 @@ import java.util.List;
 public class BasicMessageConsumer {
     private String channelEndpoint;
     private String serverIpAddress = "localhost";
-    private Integer serverPort = AbstractServer.PORT;
+    private Integer serverPort = 9998;
     private String urlLocation;
     private String messageConsumerId;
     private String eTag;
@@ -61,11 +62,23 @@ public class BasicMessageConsumer {
     private String priority;
     private String responseETag;
     private int responseCode;
+    private boolean contentsChanged =true;
     private static final HttpParams params = new BasicHttpParams();
     static{
         params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
     }
 
+    /**
+     * This gets the channel contents. If the server is running with caching enabled this method deals with conditional GET
+     * which means that if you set the eTag before calling this method then if the channel contents are unchanged since the
+     * last time this method was called, it will return an empty list and the boolean field contentsChanged is set to false.
+     *
+     * If you want to just get the contents of a specific batch, use setBatchID() before calling this method.
+     *
+     * If you want to just get the contents of the channel that have a specific priority, use setPriority() before calling this method.
+     *
+     * You cannot filter by batchID and priority at the same time.
+     */
     public List<EntrySummary> getAllMessages() {
         if(channelEndpoint==null){
             throw new ChannelClientException("Must set the channel endpoint to get the messages from.",
@@ -114,12 +127,22 @@ public class BasicMessageConsumer {
         final RetrievalResult retrievalResult = new ResultsFactory().retrievalResultFromHttpGetResponse(getResponse);
         responseETag=retrievalResult.getEtag();
         responseCode=retrievalResult.getResponseCode();
+
+        contentsChanged = responseCode != 304;
+
         if(StringUtils.isNullOrEmpty(retrievalResult.getBody())){
             return new ArrayList<EntrySummary>();
         }
         return (List<EntrySummary>) new Serializer().fromType(retrievalResult.getBody(), MediaType.APPLICATION_JSON);
     }
 
+    /**
+     * This method sets the Message Consumer ID on a specific message in the channel. This effectively reserves the message
+     * for that particular Message Consumer.
+     *
+     * You must set the Message Consumer ID first using setMessageConsumerId(String messageConsumerId), the eTag value using
+     * setETag(String eTag) and the Location of the message to reserve using setUrlLocation(String location) before calling this method.
+     */
     public void reserveMessage() {
         if(urlLocation==null){
             throw new ChannelClientException("Must set the URL Location for the message to reserve.",
@@ -165,6 +188,13 @@ public class BasicMessageConsumer {
 
     }
 
+    /**
+     * This method gets a specified message as an EntryWrapper.
+     *
+     * You must set the Location of the message to get using setUrlLocation(String location) before calling this method.
+     *
+     * @return The message as an EntryWrapper
+     */
     public EntryWrapper getMessage(){
         if(urlLocation==null){
             throw new ChannelClientException("Must set the URL Location for the message to get.",
@@ -192,64 +222,73 @@ public class BasicMessageConsumer {
 
         final Object messageBody = new Serializer().fromType(retrievalResult.getBody(), MediaType.APPLICATION_JSON);
 
-        final EntryWrapper.EntryWrapperBuilder entryWrapperBuilder = new EntryWrapper.EntryWrapperBuilder().setContent(messageBody);
+
+        final EntryWrapper entryWrapper = new EntryWrapper();
+        entryWrapper.setContent(messageBody);
 
         if(retrievalResult.getHeadersMap().containsKey(CustomHeaders.MESSAGE_SEQUENCE)){
-            entryWrapperBuilder.setSequence(Long.valueOf(retrievalResult.getHeadersMap().get(CustomHeaders.MESSAGE_SEQUENCE).get(0)));
+            entryWrapper.setSequence(Long.valueOf(retrievalResult.getHeadersMap().get(CustomHeaders.MESSAGE_SEQUENCE).get(0)));
         }
 
         if(retrievalResult.getHeadersMap().containsKey(CustomHeaders.MESSAGE_DELAY)){
-            entryWrapperBuilder.setDelay(retrievalResult.getHeadersMap().get(CustomHeaders.MESSAGE_DELAY).get(0));
+            entryWrapper.setDelay(retrievalResult.getHeadersMap().get(CustomHeaders.MESSAGE_DELAY).get(0));
         }
 
         if(retrievalResult.getHeadersMap().containsKey(CustomHeaders.CREATED_DATE)){
             try {
-                entryWrapperBuilder.setCreated(DateUtils.unreadableDate(retrievalResult.getHeadersMap().get(CustomHeaders.CREATED_DATE).get(0)));
+                entryWrapper.setCreated(DateUtils.unreadableDate(retrievalResult.getHeadersMap().get(CustomHeaders.CREATED_DATE).get(0)));
             } catch (ParseException e) {
-                entryWrapperBuilder.setCreated(0);
+                entryWrapper.setCreated(0);
             }
         }
 
         if(retrievalResult.getHeadersMap().containsKey(CustomHeaders.LAST_MODIFIED)){
             try {
-                entryWrapperBuilder.setLastUpdated(DateUtils.unreadableDate(retrievalResult.getHeadersMap().get(CustomHeaders.LAST_MODIFIED).get(0)));
+                entryWrapper.setLastUpdated(DateUtils.unreadableDate(retrievalResult.getHeadersMap().get(CustomHeaders.LAST_MODIFIED).get(0)));
             } catch (ParseException e) {
-                entryWrapperBuilder.setLastUpdated(0);
+                entryWrapper.setLastUpdated(0);
             }
         }
 
         if(retrievalResult.getHeadersMap().containsKey(CustomHeaders.CREATOR)){
-            entryWrapperBuilder.setCreator(retrievalResult.getHeadersMap().get(CustomHeaders.CREATOR).get(0));
+            entryWrapper.setCreator(retrievalResult.getHeadersMap().get(CustomHeaders.CREATOR).get(0));
         }
 
         if(retrievalResult.getHeadersMap().containsKey(CustomHeaders.MESSAGE_CONSUMER_ID)){
-            entryWrapperBuilder.setMessageConsumerId(retrievalResult.getHeadersMap().get(CustomHeaders.MESSAGE_CONSUMER_ID).get(0));
+            entryWrapper.setMessageConsumerId(retrievalResult.getHeadersMap().get(CustomHeaders.MESSAGE_CONSUMER_ID).get(0));
         }
 
         if(retrievalResult.getHeadersMap().containsKey(CustomHeaders.LOCATION)){
             final String locationValue = retrievalResult.getHeadersMap().get(CustomHeaders.LOCATION).get(0);
-            entryWrapperBuilder.setLinkUri(locationValue);
-            entryWrapperBuilder.setEntryId(locationValue.substring(locationValue.lastIndexOf("/") + 1));
+            entryWrapper.setLinkUri(locationValue);
+            entryWrapper.setEntryId(locationValue.substring(locationValue.lastIndexOf("/") + 1));
         }
 
         if(retrievalResult.getHeadersMap().containsKey(CustomHeaders.RETURN_ADDRESSES)){
             final List<String> valueList = retrievalResult.getHeadersMap().get(CustomHeaders.RETURN_ADDRESSES);
-            entryWrapperBuilder.addReturnAddress(ReturnAddress.parse(valueList));
+            for (ReturnAddress returnAddress : ReturnAddress.parse(valueList)) {
+                entryWrapper.addReturnAddress(returnAddress);
+            }
         }
 
         if(retrievalResult.getHeadersMap().containsKey(CustomHeaders.MESSAGE_BATCH_KEY)){
             final String batchKey = retrievalResult.getHeadersMap().get(CustomHeaders.MESSAGE_BATCH_KEY).get(0);
-            entryWrapperBuilder.setBatchKey(BatchKey.parse(batchKey));
+            entryWrapper.setBatchKey(BatchKey.parse(batchKey));
         }
 
         if(retrievalResult.getHeadersMap().containsKey(CustomHeaders.MESSAGE_PRIORITY)){
             final String messagePriority = retrievalResult.getHeadersMap().get(CustomHeaders.MESSAGE_PRIORITY).get(0);
-            entryWrapperBuilder.setPriority(Integer.valueOf(messagePriority));
+            entryWrapper.setPriority(Integer.valueOf(messagePriority));
         }
 
-        return entryWrapperBuilder.build();
+        return entryWrapper;
     }
 
+    /**
+     * This method deletes a specified message from the channel.
+     *
+     * You must set the Location of the message to delete using setUrlLocation(String location) before calling this method.
+     */
     public void deleteMessage() {
         if(urlLocation==null){
             throw new ChannelClientException("Must set the URL Location for the message to delete.",
@@ -282,22 +321,38 @@ public class BasicMessageConsumer {
         }
     }
 
+    /**
+     * Set the channel to perform the operation on.
+     * @param channelEndpoint The channel endpoint (eg. http://{serverip}:{serverport}/channels/1.0/{channelName})
+     */
     public void setChannelEndpoint(String channelEndpoint) {
         this.channelEndpoint = channelEndpoint;
     }
 
+    /**
+     * Set the server ip address where the channel is hosted. The default is localhost.
+     * @param serverIpAddress The IP Address
+     */
     public void setServerIpAddress(String serverIpAddress) {
         if(serverIpAddress!=null){
             this.serverIpAddress = serverIpAddress;
         }
     }
 
+    /**
+     * Set the server port where the channel is hosted. The default is 9998.
+     * @param serverPort The port
+     */
     public void setServerPort(Integer serverPort) {
         if(serverPort!=null){
             this.serverPort = serverPort;
         }
     }
 
+    /**
+     * Set the full URL of the message to operate on.
+     * (eg. http://{serverip}:{serverport}/channels/1.0/{channelName}/entries/{entryid})
+     */
     public void setUrlLocation(String urlLocation) {
         this.urlLocation = urlLocation;
     }
@@ -324,5 +379,14 @@ public class BasicMessageConsumer {
 
     public int getResponseCode() {
         return responseCode;
+    }
+
+    /**
+     * To determine whether the contents of the channel have been updated since the last time.
+     * @return contents have changed true/false
+     */
+
+    public boolean haveContentsChanged() {
+        return contentsChanged;
     }
 }

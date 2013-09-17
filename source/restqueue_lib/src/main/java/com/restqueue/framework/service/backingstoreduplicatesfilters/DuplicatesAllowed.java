@@ -1,11 +1,18 @@
 package com.restqueue.framework.service.backingstoreduplicatesfilters;
 
+import com.restqueue.common.utils.StringUtils;
 import com.restqueue.framework.client.common.entryfields.BatchKey;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.common.entryfields.ExpiryDate;
+import com.restqueue.framework.client.common.entryfields.ReturnAddress;
+import com.restqueue.framework.client.common.messageheaders.CustomHeaders;
+import com.restqueue.framework.client.common.serializer.Serializer;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.exception.ChannelStoreException;
+import com.restqueue.framework.service.exception.SerializationException;
 import com.restqueue.framework.service.transport.ServiceRequest;
 import org.apache.log4j.Logger;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -25,7 +32,7 @@ import java.util.List;
  * Date: Dec 29, 2010
  * Time: 5:00:58 PM
  */
-public class DuplicatesAllowed implements BackingStoreDuplicatesFilter{
+public class DuplicatesAllowed extends BackingStoreDuplicatesFilter{
     private static final Logger log = Logger.getLogger(DuplicatesAllowed.class);
 
     public EntryWrapper add(EntryWrapper entryToAdd, List<EntryWrapper> listToAddTo) {
@@ -56,6 +63,6 @@ public class DuplicatesAllowed implements BackingStoreDuplicatesFilter{
                 }
             }
         }
-        entryToUpdate.updateFromServiceRequest(serviceRequest);
+        updateEntryWrapper(entryToUpdate, serviceRequest);
     }
 }

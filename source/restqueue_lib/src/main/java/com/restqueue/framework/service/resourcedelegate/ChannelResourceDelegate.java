@@ -7,7 +7,7 @@ import com.restqueue.framework.client.common.serializer.Serializer;
 import com.restqueue.framework.service.backingstore.ChannelBackingStore;
 import com.restqueue.framework.service.entrywrapperfactories.EntryWrapperFactory;
 import com.restqueue.framework.service.entrywrapperfactories.EntryWrapperFactoryImpl;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.exception.ChannelStoreException;
 import com.restqueue.framework.service.exception.ExceptionRenderer;
 import com.restqueue.framework.service.notification.MessageListenerAddress;
@@ -19,6 +19,7 @@ import com.restqueue.framework.service.transport.ServiceRequest;
 import com.restqueue.framework.service.transport.ServiceResponse;
 import org.apache.log4j.Logger;
 
+import javax.ws.rs.core.MediaType;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -97,10 +98,10 @@ public class ChannelResourceDelegate {
         EntryWrapper entryWrapperAdded = null;
         try {
 
-            if ("application/xml".equals(serviceRequest.getMediaTypeRequested())) {
+            if (MediaType.APPLICATION_XML.equals(serviceRequest.getMediaTypeRequested())) {
                 entryWrapper = entryWrapperFactory.newEntryWrapperInstanceFromXml(serviceRequest.getBody(), entryId, linkUri, serviceRequest.getServiceHeaders());
             }
-            else if ("application/json".equals(serviceRequest.getMediaTypeRequested())) {
+            else if (MediaType.APPLICATION_JSON.equals(serviceRequest.getMediaTypeRequested())) {
                 entryWrapper = entryWrapperFactory.newEntryWrapperInstanceFromJson(serviceRequest.getBody(), entryId, linkUri, serviceRequest.getServiceHeaders());
             }
             else {

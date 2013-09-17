@@ -1,5 +1,7 @@
 package com.restqueue.framework.service.persistence;
 
+import javax.ws.rs.core.MediaType;
+
 /**
     * Copyright 2010-2013 Nik Tomkinson
 
@@ -19,7 +21,7 @@ package com.restqueue.framework.service.persistence;
  */
 public class XmlFilePersistence extends AbstractFilePersistence{
     private static final String XML_FILENAME_EXTENSION = ".xml";
-    private static final String APPLICATION_XML = "application/xml";
+    private static final String APPLICATION_XML = MediaType.APPLICATION_XML;
 
     @Override
     protected final String getFilenameExtension() {

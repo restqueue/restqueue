@@ -1,6 +1,6 @@
 package com.restqueue.framework.service.entrywrapperfactories;
 
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.transport.ServiceHeaders;
 import org.junit.Test;
 

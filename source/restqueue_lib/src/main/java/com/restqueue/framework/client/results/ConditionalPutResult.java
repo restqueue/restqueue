@@ -3,6 +3,9 @@ package com.restqueue.framework.client.results;
 import com.restqueue.framework.client.exception.HttpResponseErrorBean;
 
 /**
+ * This class holds the details of a response for a conditional PUT (for example an update to a message). It details
+ * the eTag of the response (which can be used in subsequent attempts) and the success/failure of the operation. As there
+ * is a body supplied as part of the response, it is available through the method getBody().<BR/><BR/>
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");

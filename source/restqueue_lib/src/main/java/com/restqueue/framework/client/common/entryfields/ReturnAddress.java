@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * This class maintains the address that a message sender sets as a return (or reply-to) address or the address that a
+ * message listener wants to receive notifications on.<BR/><BR/>
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,6 +75,17 @@ public class ReturnAddress {
         return type + ":" + address;
     }
 
+    /**
+     * This will create a new ReturnAddress from a return address header. The header MUST be in the form:
+     *
+     * {type}:{address}
+     *
+     * Where {type} can be any of the values in the enum ReturnAddressType and {address} will be a String address that is
+     * suitable for the type
+     *
+     * @param returnAddressString The return address header value
+     * @return The valid ReturnAddress created fom the String
+     */
     public static ReturnAddress parse(String returnAddressString){
         final ReturnAddress returnAddress = new ReturnAddress();
 
@@ -90,6 +104,17 @@ public class ReturnAddress {
         return returnAddress;
     }
 
+    /**
+     * This will create an array of ReturnAddresses from a List of return address header. The headers MUST be in the form:
+     *
+     * {type}:{address}
+     *
+     * Where {type} can be any of the values in the enum ReturnAddressType and {address} will be a String address that is
+     * suitable for the type
+     *
+     * @param returnAddressesList The return address header values
+     * @return The valid ReturnAddresses created fom the String
+     */
     public static ReturnAddress[] parse(List<String> returnAddressesList){
         if(returnAddressesList==null){
             return new ReturnAddress[0];

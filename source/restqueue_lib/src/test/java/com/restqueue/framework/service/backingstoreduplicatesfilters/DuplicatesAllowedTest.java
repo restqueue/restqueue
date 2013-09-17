@@ -1,9 +1,10 @@
 package com.restqueue.framework.service.backingstoreduplicatesfilters;
 
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.transport.ServiceRequest;
 import org.junit.Test;
 
+import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,8 +31,11 @@ public class DuplicatesAllowedTest {
     @Test
     public void addingDuplicatesShouldBeAllowedWithThisFilter(){
         final List<EntryWrapper> listToTryToAddTo = new ArrayList<EntryWrapper>();
-        final EntryWrapper entryWrapperOne = new EntryWrapper.EntryWrapperBuilder().setContent("hello").buildNow();
-        final EntryWrapper entryWrapperTwo = new EntryWrapper.EntryWrapperBuilder().setContent("hello").buildNow();
+
+        final EntryWrapper entryWrapperOne = new EntryWrapper();
+        entryWrapperOne.setContent("hello");
+        final EntryWrapper entryWrapperTwo = new EntryWrapper();
+        entryWrapperTwo.setContent("hello");
 
         final DuplicatesAllowed duplicatesAllowed = new DuplicatesAllowed();
 
@@ -47,8 +51,11 @@ public class DuplicatesAllowedTest {
     @Test
     public void updatingEntryToMakeADuplicateShouldBeAllowedWithThisFilter(){
         final List<EntryWrapper> listToTryToAddTo = new ArrayList<EntryWrapper>();
-        final EntryWrapper entryWrapperOne = new EntryWrapper.EntryWrapperBuilder().setContent("hello").buildNow();
-        final EntryWrapper entryWrapperTwo = new EntryWrapper.EntryWrapperBuilder().setContent("goodbye").buildNow();
+
+        final EntryWrapper entryWrapperOne = new EntryWrapper();
+        entryWrapperOne.setContent("hello");
+        final EntryWrapper entryWrapperTwo = new EntryWrapper();
+        entryWrapperTwo.setContent("goodbye");
 
         final DuplicatesAllowed duplicatesAllowed = new DuplicatesAllowed();
 
@@ -58,9 +65,9 @@ public class DuplicatesAllowedTest {
         duplicatesAllowed.add(entryWrapperTwo, listToTryToAddTo);
         assertEquals(2,listToTryToAddTo.size());
 
-        //build service request here
+        //buildOnly service request here
         final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setBody("<string>hello</string>").
-                setMediaTypeRequested("application/xml").build();
+                setMediaTypeRequested(MediaType.APPLICATION_XML).build();
         duplicatesAllowed.updateFromServiceRequest(entryWrapperTwo, serviceRequest, listToTryToAddTo);
 
         assertEquals("hello",entryWrapperTwo.getContent());

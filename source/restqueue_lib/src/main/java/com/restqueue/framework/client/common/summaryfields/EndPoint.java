@@ -1,6 +1,11 @@
 package com.restqueue.framework.client.common.summaryfields;
 
+import javax.ws.rs.core.MediaType;
+
 /**
+ * This class represents an operational end point for the framework and is generally used to render options to the web
+ * administration pages.<BR/><BR/>
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +28,7 @@ public class EndPoint {
     public static final String POST="POST";
     public static final String DELETE="DELETE";
 
-    public static final String DEFAULT_MEDIA_TYPES ="application/json;application/xml";
+    public static final String DEFAULT_MEDIA_TYPES = MediaType.APPLICATION_JSON+";"+MediaType.APPLICATION_XML;
 
     private String url;
     private String httpMethod=GET;

@@ -1,6 +1,9 @@
 package com.restqueue.framework.client.exception;
 
 /**
+ * This class is an object representation of the Http error description that may occur when an error happens as a result
+ * of an http GET, PUT, POST or DELETE. It is used inside the Result implementations and simply wraps the http error message.<BR/><BR/>
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");

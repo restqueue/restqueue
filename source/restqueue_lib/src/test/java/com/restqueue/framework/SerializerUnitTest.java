@@ -1,13 +1,16 @@
 package com.restqueue.framework;
 
+import com.restqueue.common.utils.DateUtils;
 import com.restqueue.framework.client.common.entryfields.BatchKey;
-import com.restqueue.framework.client.common.serializer.Serializer;
 import com.restqueue.framework.client.common.entryfields.ReturnAddress;
 import com.restqueue.framework.client.common.entryfields.ReturnAddressType;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.common.serializer.Serializer;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.junit.Test;
+
+import javax.ws.rs.core.MediaType;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -34,16 +37,26 @@ public class SerializerUnitTest {
     public void serializerShouldCorrectlySerializeEntryWrapperToXml(){
         final String content = "Hello - Testing";
         final String creator = "Testing";
-        final EntryWrapper entryWrapper = new EntryWrapper.EntryWrapperBuilder().setCreator(creator).setContent(content).setDelay("17").
-                setPriority(11).setSequence(8).setBatchKey(new BatchKey("Batch_A",1,3)).buildNow();
+
+        final EntryWrapper entryWrapper = new EntryWrapper();
+        entryWrapper.setCreator(creator);
+        entryWrapper.setContent(content);
+        entryWrapper.setDelay("17");
+        entryWrapper.setPriority(11);
+        entryWrapper.setSequence(8);
+        entryWrapper.setBatchKey(new BatchKey("Batch_A",1,3));
+
+        final String readableDateNow = DateUtils.readableDate(System.currentTimeMillis());
+        final String startOfDate = readableDateNow.substring(0,20);
+
         final String expectedRegexString = "<entryWrapper>\n" +
                 "  <entryId></entryId>\n" +
-                "  <created>.*</created>\n" +
+                "  <created>"+startOfDate+".*</created>\n" +
                 "  <creator>"+creator+"</creator>\n" +
-                "  <lastUpdated>.*</lastUpdated>\n" +
+                "  <lastUpdated>"+startOfDate+".*</lastUpdated>\n" +
                 "  <linkUri></linkUri>\n" +
-                "  <delay>.*</delay>\n" +
-                "  <delayUntil>.*</delayUntil>\n" +
+                "  <delay>17</delay>\n" +
+                "  <delayUntil>"+startOfDate+".*</delayUntil>\n" +
                 "  <sequence>8</sequence>\n" +
                 "  <priority>11</priority>\n" +
                 "  <batchKey>\n" +
@@ -54,7 +67,7 @@ public class SerializerUnitTest {
                 "  <content class=\"string\">"+content+"</content>\n" +
                 "</entryWrapper>";
         
-        final String result = new Serializer().toType(entryWrapper,"application/xml");
+        final String result = new Serializer().toType(entryWrapper,MediaType.APPLICATION_XML);
         assertTrue(result.matches(expectedRegexString));
     }
 
@@ -62,10 +75,20 @@ public class SerializerUnitTest {
     public void serializerShouldCorrectlySerializeEntryWrapperToJson(){
         final String content = "Hello - Testing";
         final String creator = "Testing";
-        final EntryWrapper entryWrapper = new EntryWrapper.EntryWrapperBuilder().setCreator(creator).setContent(content).setDelay("17").setPriority(11).setSequence(8).buildNow();
-        final String expectedRegexString = "\\{\"entryWrapper\":\\{\"entryId\":\"\",\"created\":\".*\",\"creator\":\"Testing\",\"" +
-                "lastUpdated\":\".*\",\"linkUri\":\"\",\"delay\":17,\"delayUntil\":\".*\",\"sequence\":8,\"priority\":11,\"content\":\\{\"@class\":\"string\",\"\\$\":\"Hello - Testing\"\\}\\}\\}";
-        final String result = new Serializer().toType(entryWrapper,"application/json");
+
+        final EntryWrapper entryWrapper = new EntryWrapper();
+        entryWrapper.setCreator(creator);
+        entryWrapper.setContent(content);
+        entryWrapper.setDelay("17");
+        entryWrapper.setPriority(11);
+        entryWrapper.setSequence(8);
+
+        final String readableDateNow = DateUtils.readableDate(System.currentTimeMillis());
+        final String startOfDate = readableDateNow.substring(0,20);
+
+        final String expectedRegexString = "\\{\"entryWrapper\":\\{\"entryId\":\"\",\"created\":\""+startOfDate+".*\",\"creator\":\"Testing\",\"" +
+                "lastUpdated\":\""+startOfDate+".*\",\"linkUri\":\"\",\"delay\":17,\"delayUntil\":\""+startOfDate+".*\",\"sequence\":8,\"priority\":11,\"content\":\\{\"@class\":\"string\",\"\\$\":\"Hello - Testing\"\\}\\}\\}";
+        final String result = new Serializer().toType(entryWrapper, MediaType.APPLICATION_JSON);
         assertTrue(result.matches(expectedRegexString));
     }
 
@@ -73,28 +96,40 @@ public class SerializerUnitTest {
     public void serializerShouldCorrectlySerializeEntryWrapperWithReturnAddressesToJson(){
         final String content = "Hello - Testing";
         final String creator = "Testing";
-        final EntryWrapper entryWrapper = new EntryWrapper.EntryWrapperBuilder().setCreator(creator).setContent(content).
-                    addReturnAddress(new ReturnAddress(ReturnAddressType.EMAIL, "me@there.com")).
-                    addReturnAddress(new ReturnAddress(ReturnAddressType.URL, "http://localhost:9998/channels/1.0/stockQueryResultsQueue")).
-                setDelay("17").setSequence(8).setPriority(11).buildNow();
+
+        final EntryWrapper entryWrapper = new EntryWrapper();
+        entryWrapper.setCreator(creator);
+        entryWrapper.setContent(content);
+        entryWrapper.addReturnAddress(new ReturnAddress(ReturnAddressType.EMAIL, "me@there.com"));
+        entryWrapper.addReturnAddress(new ReturnAddress(ReturnAddressType.URL, "http://localhost:9998/channels/1.0/stockQueryResultsQueue"));
+        entryWrapper.setDelay("17");
+        entryWrapper.setPriority(11);
+        entryWrapper.setSequence(8);
+
         final String expectedRegexString = "\\{\"entryWrapper\":\\{\"entryId\":\"\",\"created\":\".*\",\"creator\":\"Testing\",\"" +
                 "lastUpdated\":\".*\",\"linkUri\":\"\",\"delay\":17,\"delayUntil\":\".*\",\"sequence\":8,\"priority\":11," +
                 "\"returnAddresses\":\\[\\{\"returnAddress\":\\[\\{\"type\":\"EMAIL\",\"address\":\"me@there.com\"\\},\\{\"type\":\"URL\"," +
                 "\"address\":\"http:\\\\/\\\\/localhost:9998\\\\/channels\\\\/1.0\\\\/stockQueryResultsQueue\"\\}\\]\\}\\]," +
                 "\"content\":\\{\"@class\":\"string\",\"\\$\":\"Hello - Testing\"\\}\\}\\}";
-        final String result = new Serializer().toType(entryWrapper,"application/json");
+        final String result = new Serializer().toType(entryWrapper,MediaType.APPLICATION_JSON);
         assertTrue(result.matches(expectedRegexString));
     }
 
     @Test
     public void toStringOfEntryWrapperShouldMatchAfterSerializingAndDeSerializing(){
-        final EntryWrapper entryWrapperBefore = new EntryWrapper.EntryWrapperBuilder().setCreator("Testing").setContent("Hello - Testing").setDelay("60").
-                    addReturnAddress(new ReturnAddress(ReturnAddressType.EMAIL, "me@there.com")).
-                    addReturnAddress(new ReturnAddress(ReturnAddressType.URL, "http://localhost:9998/channels/1.0/stockQueryResultsQueue")).buildNow();
+        final EntryWrapper entryWrapperBefore = new EntryWrapper();
+        entryWrapperBefore.setCreator("Testing");
+        entryWrapperBefore.setContent("Hello - Testing");
+        entryWrapperBefore.addReturnAddress(new ReturnAddress(ReturnAddressType.EMAIL, "me@there.com"));
+        entryWrapperBefore.addReturnAddress(new ReturnAddress(ReturnAddressType.URL, "http://localhost:9998/channels/1.0/stockQueryResultsQueue"));
+        entryWrapperBefore.setDelay("60");
+        entryWrapperBefore.setPriority(11);
+        entryWrapperBefore.setSequence(8);
+
         final String beforeString = ReflectionToStringBuilder.toString(entryWrapperBefore, ToStringStyle.SHORT_PREFIX_STYLE);
 
         final EntryWrapper entryWrapperAfter = (EntryWrapper)new Serializer().
-                fromType(new Serializer().toType(entryWrapperBefore,"application/xml"),"application/xml");
+                fromType(new Serializer().toType(entryWrapperBefore,MediaType.APPLICATION_XML),MediaType.APPLICATION_XML);
 
         final String afterString = ReflectionToStringBuilder.toString(entryWrapperAfter, ToStringStyle.SHORT_PREFIX_STYLE);
 

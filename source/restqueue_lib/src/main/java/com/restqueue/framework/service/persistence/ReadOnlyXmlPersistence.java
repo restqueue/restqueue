@@ -2,6 +2,9 @@ package com.restqueue.framework.service.persistence;
 
 import org.apache.log4j.Logger;
 
+import javax.ws.rs.core.MediaType;
+import java.util.Map;
+
 /**
     * Copyright 2010-2013 Nik Tomkinson
 
@@ -23,7 +26,7 @@ public class ReadOnlyXmlPersistence extends AbstractFilePersistence{
     private static final Logger log = Logger.getLogger(ReadOnlyXmlPersistence.class);
 
     private static final String XML_FILENAME_EXTENSION = ".xml";
-    private static final String APPLICATION_XML = "application/xml";
+    private static final String APPLICATION_XML = MediaType.APPLICATION_XML;
 
     @Override
     protected String getFilenameExtension() {
@@ -33,5 +36,11 @@ public class ReadOnlyXmlPersistence extends AbstractFilePersistence{
     @Override
     protected String getFilenameExtensionCode() {
         return APPLICATION_XML;
+    }
+
+    @Override
+    public void saveUpdated(Class associatedChannelResourceClazz, Map<String, Object> changedState) {
+        //do nothing as this is read only persistence
+        log.info("Not saving changes - ReadOnly persistence selected");
     }
 }

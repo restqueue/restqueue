@@ -1,7 +1,7 @@
 package com.restqueue.framework.service.persistence;
 
 import com.restqueue.framework.service.channelstate.ChannelState;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.notification.MessageListenerAddress;
 import com.restqueue.framework.service.notification.MessageListenerGroup;
 import org.apache.log4j.Logger;

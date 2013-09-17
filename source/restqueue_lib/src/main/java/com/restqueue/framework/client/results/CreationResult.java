@@ -3,6 +3,12 @@ package com.restqueue.framework.client.results;
 import com.restqueue.framework.client.exception.HttpResponseErrorBean;
 
 /**
+ * This represents the result of a creation operation (for example creating a new message). You will be abe to get the
+ * body and eTag and most importantly the Location that the new message has been placed at. You will need this Location
+ * for any further operations on the message (eg. updates and deletion) so keep hold of it (although you can get it from
+ * the channel contents when the message conditions permit (eg. all batch messages available or delay-until time expired)
+ * <BR/><BR/>
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -79,6 +85,8 @@ public class CreationResult implements Result{
     public String toString() {
         return "CreationResult{" +
                 "location='" + location + '\'' +
+                ", etag='" + etag + '\'' +
+                ", body='" + body + '\'' +
                 ", executionResult=" + executionResult +
                 '}';
     }

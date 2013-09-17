@@ -1,7 +1,7 @@
 package com.restqueue.framework.service.backingstorefilters;
 
 import com.restqueue.framework.service.channelstate.ChannelState;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -32,12 +32,19 @@ public class SpecificPriorityFilterTest {
     public void filterShouldFilterByPriority() {
         final List<EntryWrapper> listOfEntryWrappersBefore = new ArrayList<EntryWrapper>();
 
-        final EntryWrapper entryWrapper10 = new EntryWrapper.EntryWrapperBuilder().setPriority(10).buildNow();
-        final EntryWrapper entryWrapper20 = new EntryWrapper.EntryWrapperBuilder().setPriority(20).buildNow();
-        final EntryWrapper entryWrapper30 = new EntryWrapper.EntryWrapperBuilder().setPriority(30).buildNow();
-        final EntryWrapper entryWrapper40 = new EntryWrapper.EntryWrapperBuilder().setPriority(40).buildNow();
-        final EntryWrapper entryWrapper60 = new EntryWrapper.EntryWrapperBuilder().setPriority(60).buildNow();
-        final EntryWrapper entryWrapper70 = new EntryWrapper.EntryWrapperBuilder().setPriority(70).buildNow();
+        final EntryWrapper entryWrapper10 = new EntryWrapper();
+        entryWrapper10.setPriority(10);
+        final EntryWrapper entryWrapper20 = new EntryWrapper();
+        entryWrapper20.setPriority(20);
+        final EntryWrapper entryWrapper30 = new EntryWrapper();
+        entryWrapper30.setPriority(30);
+        final EntryWrapper entryWrapper40 = new EntryWrapper();
+        entryWrapper40.setPriority(40);
+        final EntryWrapper entryWrapper60 = new EntryWrapper();
+        entryWrapper60.setPriority(60);
+        final EntryWrapper entryWrapper70 = new EntryWrapper();
+        entryWrapper70.setPriority(70);
+
 
         listOfEntryWrappersBefore.add(entryWrapper10);
         listOfEntryWrappersBefore.add(entryWrapper20);

@@ -2,7 +2,7 @@ package com.restqueue.framework.service.backingstoreduplicatesfilters;
 
 import com.restqueue.framework.client.common.entryfields.BatchKey;
 import com.restqueue.framework.client.common.serializer.Serializer;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.exception.ChannelStoreException;
 import com.restqueue.framework.service.exception.SerializationException;
 import com.restqueue.framework.service.transport.ServiceRequest;
@@ -27,7 +27,7 @@ import java.util.List;
  * Date: Dec 29, 2010
  * Time: 5:02:59 PM
  */
-public class DuplicatesNotAllowed implements BackingStoreDuplicatesFilter {
+public class DuplicatesNotAllowed extends BackingStoreDuplicatesFilter {
     private static final Logger log = Logger.getLogger(DuplicatesNotAllowed.class);
 
     public EntryWrapper add(EntryWrapper entryToAdd, List<EntryWrapper> listToAddTo) {
@@ -81,6 +81,6 @@ public class DuplicatesNotAllowed implements BackingStoreDuplicatesFilter {
             }
         }
 
-        entryWrapperToUpdate.updateFromServiceRequest(serviceRequest);
+        updateEntryWrapper(entryWrapperToUpdate, serviceRequest);
     }
 }

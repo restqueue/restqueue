@@ -3,6 +3,9 @@ package com.restqueue.framework.client.common.entryfields;
 import com.restqueue.framework.service.exception.ChannelStoreException;
 
 /**
+ * This class defines how a message that is associated with a batch is identified.
+ * <BR/><BR/>
+
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,12 +48,19 @@ public class BatchKey {
         return batchSize;
     }
 
+    /**
+     * Creates a new BatchKey from the String representation. The String representation MUST be in the form
+     * {BatchName}:{MessageNumber}/{BatchSize} eg. Batch1:1/2 meaning this message is in Batch1 and is message 1 of 2.
+     *
+     * @param batchKeyString The batch key representation
+     * @return the new BatchKey
+     */
     public static BatchKey parse(String batchKeyString){
         if(batchKeyString==null){
             return null;
         }
 
-        if(batchKeyString.indexOf(":")==-1){
+        if(!batchKeyString.contains(":")){
             throw new ChannelStoreException("Request has a malformed Batch key header - it MUST be in the form BatchName:MessageNumber/BatchSize " +
                     "eg. Batch1:1/2 meaning this message is in Batch1 and is message 1 of 2", ChannelStoreException.ExceptionType.INVALID_ENTRY_DATA_PROVIDED);
         }

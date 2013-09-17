@@ -1,6 +1,9 @@
 package com.restqueue.framework.client.exception;
 
 /**
+ * This exception is used to identify to Java client code what has happened when something goes wrong with an operation
+ * when using one of the provided Java client libraries.<BR/><BR/>
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");

@@ -6,9 +6,8 @@ import com.restqueue.framework.service.backingstorefilters.BackingStoreFilter;
 import com.restqueue.framework.service.backingstorefilters.BatchingFilter;
 import com.restqueue.framework.service.backingstorefilters.SpecificPriorityFilter;
 import com.restqueue.framework.service.channelstate.ChannelState;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
-import com.restqueue.framework.service.persistence.Persistence;
-import com.restqueue.framework.service.persistence.PersistenceProvider;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
+import com.restqueue.framework.service.persistence.*;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -36,6 +35,7 @@ public class MessageListenerNotification {
     private Class associatedChannelResourceClazz;
 
     private Persistence persistence;
+    private Snapshot snapshot;
 
     protected Map<String, MessageListenerAddress> registeredMessageListeners = new HashMap<String, MessageListenerAddress>();
     protected Map<String, MessageListenerGroup> messageListenerGroupRegistration = new HashMap<String, MessageListenerGroup>();
@@ -48,6 +48,7 @@ public class MessageListenerNotification {
 
     private MessageListenerNotification() {
         persistence = PersistenceProvider.getPersistenceImplementationBasedOnProgramArguments();
+        snapshot = new SnapshotImpl();
     }
 
     protected static MessageListenerNotification createInstance(Class associatedChannelResourceClazz){
@@ -175,11 +176,11 @@ public class MessageListenerNotification {
     }
 
     public void takeSnapshot(String fileDateId) {
-        persistence.takeListenerSnapshot(associatedChannelResourceClazz, registeredMessageListeners, messageListenerGroupRegistration, fileDateId);
+        snapshot.takeListenerSnapshot(associatedChannelResourceClazz, registeredMessageListeners, messageListenerGroupRegistration, fileDateId);
     }
 
     public void restoreFromSnapshot(String snapshotId) {
-        persistence.overwriteCurrentListenerDataWithSnapshot(associatedChannelResourceClazz, snapshotId);
+        snapshot.overwriteCurrentListenerDataWithSnapshot(associatedChannelResourceClazz, snapshotId);
 
         //force a restore from working directory
         load();

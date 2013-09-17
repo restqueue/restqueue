@@ -18,6 +18,12 @@ package com.restqueue.framework.service.channelstate;
  * Time: 9:43:32 AM
  */
 public enum BatchStrategy {
+    /**
+     * ARRIVAL will provide the channel contents that relate to a specific batch as soon as they are available on the channel.
+     *
+     * COMPLETE will only provide the channel contents that relate to a specific batch once all of the messages that make
+     * up the batch are available on the channel.
+     */
     ARRIVAL("ARRIVAL"),COMPLETE("COMPLETE");
 
     private String descriptionMustEqualName;

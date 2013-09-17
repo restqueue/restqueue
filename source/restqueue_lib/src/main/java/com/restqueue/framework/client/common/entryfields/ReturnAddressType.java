@@ -1,6 +1,9 @@
 package com.restqueue.framework.client.common.entryfields;
 
 /**
+ * This class holds the different types of addresses that message senders can set for their return addresses and
+ * message listeners can set as their notification addresses.
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");

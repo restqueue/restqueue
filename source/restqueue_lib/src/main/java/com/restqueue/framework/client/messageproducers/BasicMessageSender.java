@@ -4,7 +4,7 @@ import com.restqueue.common.utils.URLUtils;
 import com.restqueue.framework.client.common.messageheaders.CustomHeaders;
 import com.restqueue.framework.client.common.serializer.Serializer;
 import com.restqueue.framework.client.exception.ChannelClientException;
-import com.restqueue.framework.client.results.Result;
+import com.restqueue.framework.client.results.CreationResult;
 import com.restqueue.framework.client.results.ResultsFactory;
 import com.restqueue.framework.service.server.AbstractServer;
 import org.apache.http.HttpResponse;
@@ -26,7 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
-    * Copyright 2010-2013 Nik Tomkinson
+ * This class encapsulates the functionality that you need to send messages into a channel.<BR/><BR/>
+ * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,7 +52,18 @@ public class BasicMessageSender {
     private Integer serverPort = AbstractServer.PORT;
     private MediaType asType;
 
-    public Result sendMessage() {
+
+    /**
+     * This enables you to send a message.
+     *
+     * You must set either the stringBody (if you already have a json or xml message formatted) or the objectBody first before sending a message.
+     * These can be set using setStringBodyAndType(String stringBody, MediaType asType) and setObjectBody(Object objectBody) respectively.
+     *
+     * You also must set the channel endpoint as well as the server IP address and port (if they vary from the defaults localhost and 9998).
+     *
+     * @return The result of the update giving you access to the http response code and error information
+     */
+    public CreationResult sendMessage() {
 
         Object messageBody=null;
         if(stringBody==null && objectBody==null){
@@ -126,10 +138,19 @@ public class BasicMessageSender {
         }
     }
 
+    /**
+     * Set the channel to perform the operation on.
+     * @param channelEndpoint The channel endpoint (eg. http://{serverip}:{serverport}/channels/1.0/{channelName})
+     */
     public void setChannelEndpoint(String channelEndpoint) {
         this.channelEndpoint = channelEndpoint;
     }
 
+    /**
+     * This enables you to set the headers that are required for specific functionality (eg. delaying messages, batching them etc)
+     * @param customHeaders The header type
+     * @param values The header values to set.
+     */
     public void addHeader(CustomHeaders customHeaders, List<String> values){
         if(headerMap.containsKey(customHeaders)){
             headerMap.get(customHeaders).addAll(values);
@@ -139,21 +160,39 @@ public class BasicMessageSender {
         }
     }
 
+    /**
+     * This is to set the body if you already have a serialized version of the body of the message. You will need to make
+     * sure that the class of the message body is in the classpath of the server.
+     * @param stringBody The serialized message body
+     * @param asType The serialization format that the stringBody is using.
+     */
     public void setStringBodyAndType(String stringBody, MediaType asType) {
         this.stringBody = stringBody;
         this.asType = asType;
     }
 
+    /**
+     * This is to set the body of the message which can be anything that extends Object.
+     * @param objectBody The body
+     */
     public void setObjectBody(Object objectBody) {
         this.objectBody = objectBody;
     }
 
+    /**
+     * Set the server ip address where the channel is hosted. The default is localhost.
+     * @param serverIpAddress The IP Address
+     */
     public void setServerIpAddress(String serverIpAddress) {
         if(serverIpAddress!=null){
             this.serverIpAddress = serverIpAddress;
         }
     }
 
+    /**
+     * Set the server port where the channel is hosted. The default is 9998.
+     * @param serverPort The port
+     */
     public void setServerPort(Integer serverPort) {
         if(serverPort!=null){
             this.serverPort = serverPort;

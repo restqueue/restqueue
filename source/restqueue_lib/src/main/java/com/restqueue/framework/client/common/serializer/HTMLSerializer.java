@@ -2,7 +2,7 @@ package com.restqueue.framework.client.common.serializer;
 
 import com.restqueue.common.utils.ArrayUtils;
 import com.restqueue.framework.client.common.summaryfields.EndPoint;
-import com.restqueue.framework.service.entrywrappers.EntrySummary;
+import com.restqueue.framework.client.entrywrappers.EntrySummary;
 import com.restqueue.framework.service.notification.MessageListenerAddress;
 
 import java.util.ArrayList;
@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * This class is used to render various things into HTML for the administration web pages.<BR/><BR/>
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");

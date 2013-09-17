@@ -3,6 +3,8 @@ package com.restqueue.framework.client.results;
 import com.restqueue.framework.client.exception.HttpResponseErrorBean;
 
 /**
+ * These are the common methods for all of the Result objects to implement.<BR/><BR/>
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");

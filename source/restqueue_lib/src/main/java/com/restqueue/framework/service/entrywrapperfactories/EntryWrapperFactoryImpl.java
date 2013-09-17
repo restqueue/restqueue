@@ -3,8 +3,11 @@ package com.restqueue.framework.service.entrywrapperfactories;
 import com.restqueue.framework.client.common.entryfields.BatchKey;
 import com.restqueue.framework.client.common.messageheaders.CustomHeaders;
 import com.restqueue.framework.client.common.entryfields.ReturnAddress;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.common.serializer.Serializer;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.transport.ServiceHeaders;
+
+import javax.ws.rs.core.MediaType;
 
 
 /**
@@ -25,32 +28,30 @@ import com.restqueue.framework.service.transport.ServiceHeaders;
  * Time: 8:07:34 PM
  */
 public class EntryWrapperFactoryImpl implements EntryWrapperFactory {
-    public EntryWrapper newEntryWrapperInstance(Object messageBody, String messageProducer) {
-        return new EntryWrapper.EntryWrapperBuilder().
-                setContent(messageBody).setCreator(messageProducer).buildNow();
-    }
-
     public EntryWrapper newEntryWrapperInstanceFromXml(String requestBody, String entryId, String linkUri, ServiceHeaders headers) {
-        return new EntryWrapper.EntryWrapperFromXmlBuilder(requestBody).
-                setCreator(headers.getSingleStringHeaderValueFromHeaders(CustomHeaders.CREATOR)).
-                addReturnAddress(ReturnAddress.parse(headers.getHeaderValueList(CustomHeaders.RETURN_ADDRESSES))).
-                setSequence(headers.getSingleNullSafeIntHeaderValueFromHeaders(CustomHeaders.MESSAGE_SEQUENCE)).
-                setDelayUntil(headers.getSingleStringHeaderValueFromHeaders(CustomHeaders.MESSAGE_DELAY_UNTIL)).
-                setDelay(headers.getSingleStringHeaderValueFromHeaders(CustomHeaders.MESSAGE_DELAY)).
-                setPriority(headers.getSingleNullSafeIntHeaderValueFromHeaders(CustomHeaders.MESSAGE_PRIORITY)).
-                setBatchKey(BatchKey.parse(headers.getSingleStringHeaderValueFromHeaders(CustomHeaders.MESSAGE_BATCH_KEY))).
-                setEntryId(entryId).setLinkUri(linkUri).build();
+        final String type = MediaType.APPLICATION_XML;
+        return createEntryWrapper(requestBody, entryId, linkUri, headers, type);
     }
 
     public EntryWrapper newEntryWrapperInstanceFromJson(String requestBody, String entryId, String linkUri, ServiceHeaders headers) {
-        return new EntryWrapper.EntryWrapperFromJsonBuilder(requestBody).
-                setCreator(headers.getSingleStringHeaderValueFromHeaders(CustomHeaders.CREATOR)).
-                addReturnAddress(ReturnAddress.parse(headers.getHeaderValueList(CustomHeaders.RETURN_ADDRESSES))).
-                setSequence(headers.getSingleNullSafeIntHeaderValueFromHeaders(CustomHeaders.MESSAGE_SEQUENCE)).
-                setDelayUntil(headers.getSingleStringHeaderValueFromHeaders(CustomHeaders.MESSAGE_DELAY_UNTIL)).
-                setDelay(headers.getSingleStringHeaderValueFromHeaders(CustomHeaders.MESSAGE_DELAY)).
-                setPriority(headers.getSingleNullSafeIntHeaderValueFromHeaders(CustomHeaders.MESSAGE_PRIORITY)).
-                setBatchKey(BatchKey.parse(headers.getSingleStringHeaderValueFromHeaders(CustomHeaders.MESSAGE_BATCH_KEY))).
-                setEntryId(entryId).setLinkUri(linkUri).build();
+        final String type = MediaType.APPLICATION_JSON;
+        return createEntryWrapper(requestBody, entryId, linkUri, headers, type);
+    }
+
+    private EntryWrapper createEntryWrapper(String requestBody, String entryId, String linkUri, ServiceHeaders headers, String type) {
+        final EntryWrapper entryWrapper = new EntryWrapper();
+        entryWrapper.setContent(new Serializer().fromType(requestBody, type));
+        entryWrapper.setCreator(headers.getSingleStringHeaderValueFromHeaders(CustomHeaders.CREATOR));
+        for (ReturnAddress returnAddress : ReturnAddress.parse(headers.getHeaderValueList(CustomHeaders.RETURN_ADDRESSES))) {
+            entryWrapper.addReturnAddress(returnAddress);
+        }
+        entryWrapper.setSequence(headers.getSingleNullSafeIntHeaderValueFromHeaders(CustomHeaders.MESSAGE_SEQUENCE));
+        entryWrapper.setDelayUntil(headers.getSingleStringHeaderValueFromHeaders(CustomHeaders.MESSAGE_DELAY_UNTIL));
+        entryWrapper.setDelay(headers.getSingleStringHeaderValueFromHeaders(CustomHeaders.MESSAGE_DELAY));
+        entryWrapper.setPriority(headers.getSingleNullSafeIntHeaderValueFromHeaders(CustomHeaders.MESSAGE_PRIORITY));
+        entryWrapper.setBatchKey(BatchKey.parse(headers.getSingleStringHeaderValueFromHeaders(CustomHeaders.MESSAGE_BATCH_KEY)));
+        entryWrapper.setEntryId(entryId);
+        entryWrapper.setLinkUri(linkUri);
+        return entryWrapper;
     }
 }

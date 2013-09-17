@@ -4,6 +4,7 @@ import com.restqueue.common.utils.EnumUtils;
 import com.restqueue.framework.client.common.serializer.Serializer;
 import com.restqueue.framework.service.exception.ChannelStoreException;
 
+import javax.ws.rs.core.MediaType;
 import java.util.*;
 
 /**
@@ -157,7 +158,7 @@ public class ChannelState {
     }
 
     public String getETag() {
-        return String.valueOf(serializeToType("application/json").hashCode());
+        return String.valueOf(serializeToType(MediaType.APPLICATION_JSON).hashCode());
     }
 
     public String getFieldETag(String stateField) {

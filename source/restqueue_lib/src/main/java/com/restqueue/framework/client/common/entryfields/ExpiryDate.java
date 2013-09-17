@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * This class represents the complex format that a delay duration message header can take.
+ * <BR/><BR/>
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,6 +43,14 @@ public class ExpiryDate {
 
     private ExpiryDate() {}
 
+    /**
+     * This parses a String representation of a delay duration into a ExpiryDate instance. The String representation
+     * MUST be in the form '1y:2M:3w:4d:5h:6m:7s' for 1 year, 2 Months, 3 weeks, 4 days, 5 hours, 6 minutes and 7 seconds
+     * (some of these parts can be missing) or '1234567' for 1,234,567 seconds<BR/><BR/>
+     *
+     * @param delayHeader The String representation
+     * @return The ExpiryDate instance created
+     */
     public static ExpiryDate fromDelayHeader(String delayHeader){
         final ExpiryDate expiryDate = new ExpiryDate();
 
@@ -84,6 +94,16 @@ public class ExpiryDate {
         return expiryDate;
     }
 
+    /**
+     * Returns a RFC2822 <A href="http://tools.ietf.org/html/rfc2822">http://tools.ietf.org/html/rfc2822</A>}
+     * valid date based on the application of the delay duration
+     * information based in this instance to the RFC2822 date passed in.<BR/><BR/>
+     *
+     * An RFC2822 date can be parsed using java date format: EEE, dd MMM yyyy HH:mm:ss zzz
+     *
+     * @param createdDateHeader The RFC2822 created date of the message
+     * @return The RFC2822 expiry date
+     */
     public String toExpiryDateHeader(String createdDateHeader){
         final Date createdDate;
         try {

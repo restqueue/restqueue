@@ -1,10 +1,11 @@
 package com.restqueue.framework.service.backingstoreduplicatesfilters;
 
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.exception.ChannelStoreException;
 import com.restqueue.framework.service.transport.ServiceRequest;
 import org.junit.Test;
 
+import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,8 +33,11 @@ public class DuplicatesNotAllowedTest {
     @Test(expected = ChannelStoreException.class)
     public void addingDuplicatesShouldNotBeAllowedWithThisFilter(){
         final List<EntryWrapper> listToTryToAddTo = new ArrayList<EntryWrapper>();
-        final EntryWrapper entryWrapperOne = new EntryWrapper.EntryWrapperBuilder().setContent("hello").buildNow();
-        final EntryWrapper entryWrapperTwo = new EntryWrapper.EntryWrapperBuilder().setContent("hello").buildNow();
+
+        final EntryWrapper entryWrapperOne = new EntryWrapper();
+        entryWrapperOne.setContent("hello");
+        final EntryWrapper entryWrapperTwo = new EntryWrapper();
+        entryWrapperTwo.setContent("hello");
 
         final DuplicatesNotAllowed duplicatesNotAllowed = new DuplicatesNotAllowed();
 
@@ -49,8 +53,13 @@ public class DuplicatesNotAllowedTest {
     @Test(expected = ChannelStoreException.class)
     public void updatingEntryToMakeADuplicateShouldNotBeAllowedWithThisFilter(){
         final List<EntryWrapper> listToTryToAddTo = new ArrayList<EntryWrapper>();
-        final EntryWrapper entryWrapperOne = new EntryWrapper.EntryWrapperBuilder().setContent("hello").setEntryId("1").buildNow();
-        final EntryWrapper entryWrapperTwo = new EntryWrapper.EntryWrapperBuilder().setContent("goodbye").setEntryId("2").buildNow();
+
+        final EntryWrapper entryWrapperOne = new EntryWrapper();
+        entryWrapperOne.setContent("hello");
+        entryWrapperOne.setEntryId("1");
+        final EntryWrapper entryWrapperTwo = new EntryWrapper();
+        entryWrapperTwo.setContent("hello");
+        entryWrapperTwo.setEntryId("2");
 
         final DuplicatesNotAllowed duplicatesNotAllowed = new DuplicatesNotAllowed();
 
@@ -60,9 +69,9 @@ public class DuplicatesNotAllowedTest {
         duplicatesNotAllowed.add(entryWrapperTwo, listToTryToAddTo);
         assertEquals(2,listToTryToAddTo.size());
 
-        //build service request here
+        //buildOnly service request here
         final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setBody("<string>hello</string>").
-                setMediaTypeRequested("application/xml").addParameter("entryId","2").build();
+                setMediaTypeRequested(MediaType.APPLICATION_XML).addParameter("entryId","2").build();
         try {
             duplicatesNotAllowed.updateFromServiceRequest(entryWrapperTwo, serviceRequest, listToTryToAddTo);
         } catch (ChannelStoreException e) {

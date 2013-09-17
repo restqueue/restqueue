@@ -1,6 +1,6 @@
 package com.restqueue.framework.service.backingstorefilters;
 
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -30,9 +30,13 @@ public class PriorityDescendingFilterTest {
     public void filterShouldOrderListByDescendingPriority(){
         final List<EntryWrapper> listOfEntryWrappersBefore = new ArrayList<EntryWrapper>();
 
-        final EntryWrapper entryWrapper10 = new EntryWrapper.EntryWrapperBuilder().setPriority(10).buildNow();
-        final EntryWrapper entryWrapper60 = new EntryWrapper.EntryWrapperBuilder().setPriority(60).buildNow();
-        final EntryWrapper entryWrapper30 = new EntryWrapper.EntryWrapperBuilder().setPriority(30).buildNow();
+        final EntryWrapper entryWrapper10 = new EntryWrapper();
+        entryWrapper10.setPriority(10);
+        final EntryWrapper entryWrapper60 = new EntryWrapper();
+        entryWrapper60.setPriority(60);
+        final EntryWrapper entryWrapper30 = new EntryWrapper();
+        entryWrapper30.setPriority(30);
+
 
         listOfEntryWrappersBefore.add(entryWrapper30);
         listOfEntryWrappersBefore.add(entryWrapper60);

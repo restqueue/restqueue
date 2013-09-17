@@ -3,6 +3,9 @@ package com.restqueue.framework.client.results;
 import com.restqueue.framework.client.exception.HttpResponseErrorBean;
 
 /**
+ * This represents the common fields that all http method responses contain. They are the success of the operation,
+ * the http response code and the exception details<BR/><BR/>
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");

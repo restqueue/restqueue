@@ -41,10 +41,12 @@ public abstract class AbstractServer {
     public static final String SPECIFIED_PERSISTENCE_SWITCH = "P";
     public static final String SPECIFIED_PERSISTENCE_FREQUENCY_SWITCH = "PF";
     public static final String NO_CACHE_SWITCH = "NC";
+    public static final String HEAD_LESS = "h";
 
     private Thread persistenceThread;
 
     public void startUpServer(String[] arguments) throws IOException {
+        allowedArguments.add(new ArgumentMetaData(HEAD_LESS,"Head-less", ArgumentMetaData.ArgumentMetaDataType.BOOLEAN, true));
         allowedArguments.add(new ArgumentMetaData(SPECIFIED_PORT_SWITCH,"Port", ArgumentMetaData.ArgumentMetaDataType.INTEGER, PORT));
         allowedArguments.add(new ArgumentMetaData(NO_CACHE_SWITCH,"No Cache", ArgumentMetaData.ArgumentMetaDataType.BOOLEAN, false));
         allowedArguments.add(new ArgumentMetaData(SPECIFIED_PERSISTENCE_SWITCH, "Persistence", ArgumentMetaData.ArgumentMetaDataType.STRING, "Normal"));
@@ -67,7 +69,9 @@ public abstract class AbstractServer {
         final Map<String, String> initParameters =
                 new HashMap<String, String>();
 
-        initParameters.put("com.sun.jersey.config.property.packages", "com.restqueue.gen.web");
+        initParameters.put("com.sun.jersey.config.property.packages", "com.restqueue.gen.web,com.restqueue.control");
+
+        log.info("Server using RESTQueue lib version:1.1");
 
         log.info("Starting server using port "+PORT);
         SelectorThread threadSelector =
@@ -75,16 +79,31 @@ public abstract class AbstractServer {
 
         onStart();
 
-        log.info("Server started! Type QUIT, STOP or EXIT to stop this server.");
+        if (!ServerArguments.getInstance().getBooleanArgument(HEAD_LESS)) {
+            log.info("Server started! Type QUIT, STOP or EXIT to stop this server.");
 
-        final BufferedReader bufferedConsoleReader = new BufferedReader(new InputStreamReader(System.in));
-        String command="";
-        while(!(command.equalsIgnoreCase("QUIT") ||command.equalsIgnoreCase("STOP") || command.equalsIgnoreCase("EXIT"))){
-            command = bufferedConsoleReader.readLine();
+            final BufferedReader bufferedConsoleReader = new BufferedReader(new InputStreamReader(System.in));
+            String command = "";
+            while (!(command.equalsIgnoreCase("QUIT") || command.equalsIgnoreCase("STOP") || command.equalsIgnoreCase("EXIT"))) {
+                command = bufferedConsoleReader.readLine();
+            }
+        }
+        else {
+            log.info("Running in 'headless' mode - stop server by sending a POST http request to /control/1.0/stopserver");
+            while (!ServerKillSwitch.getInstance().isServerSetToStop()) {
+                try {
+                    Thread.sleep(1000);
+                }
+                catch (InterruptedException e) {
+                    ServerKillSwitch.getInstance().killServer();
+                }
+            }
         }
 
         log.info("Server stopping!");
         threadSelector.stopEndpoint();
+
+        ServerKillSwitch.getInstance().killServer();
 
         if(persistenceThread!=null){
             persistenceThread.interrupt();

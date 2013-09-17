@@ -2,7 +2,7 @@ package com.restqueue.framework.service.backingstorefilters;
 
 import com.restqueue.framework.service.channelstate.BatchStrategy;
 import com.restqueue.framework.service.channelstate.ChannelState;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 
 import java.util.HashMap;
 import java.util.List;

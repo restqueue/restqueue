@@ -1,6 +1,6 @@
 package com.restqueue.framework.service.backingstorefilters;
 
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -30,8 +30,10 @@ public class ExpiredFilterTest {
     public void filterShouldProvideExpiredMessagesOnly() throws InterruptedException {
         final List<EntryWrapper> listOfEntryWrappersBefore = new ArrayList<EntryWrapper>();
 
-        final EntryWrapper entryWrapper0 = new EntryWrapper.EntryWrapperBuilder().setDelay("10").buildNow();
-        final EntryWrapper entryWrapper4 = new EntryWrapper.EntryWrapperBuilder().setDelay("20").buildNow();
+        final EntryWrapper entryWrapper0 = new EntryWrapper();
+        entryWrapper0.setDelay("10");
+        final EntryWrapper entryWrapper4 = new EntryWrapper();
+        entryWrapper4.setDelay("20");
 
         listOfEntryWrappersBefore.add(entryWrapper0);
         listOfEntryWrappersBefore.add(entryWrapper4);

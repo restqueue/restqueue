@@ -17,5 +17,13 @@ package com.restqueue.framework.service.channelstate;
  * Date: Mar 4, 2011
  * Time: 6:54:35 PM
  */
-public enum SequenceStrategy {SINGLE, GROUPED
+public enum SequenceStrategy {
+    /**
+     * SINGLE will provide the messages one at a time as long as they match the channel's nextMessageSequence value and
+     * they are available on the channel.
+     *
+     * GROUPED will provide as many messages that are available on the channel as possible in a sequence starting from
+     * the channel's nextMessageSequence value.
+     */
+    SINGLE, GROUPED
 }

@@ -1,6 +1,6 @@
 package com.restqueue.framework.service.entrywrapperfactories;
 
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.transport.ServiceHeaders;
 
 /**
@@ -21,8 +21,6 @@ import com.restqueue.framework.service.transport.ServiceHeaders;
  * Time: 7:41:28 PM
  */
 public interface EntryWrapperFactory {
-    public EntryWrapper newEntryWrapperInstance(Object messageBody, String messageProducer);
-
     public EntryWrapper newEntryWrapperInstanceFromXml(String requestBody, String entryId, String linkUri, ServiceHeaders headers);
 
     public EntryWrapper newEntryWrapperInstanceFromJson(String requestBody, String entryId, String linkUri, ServiceHeaders headers);

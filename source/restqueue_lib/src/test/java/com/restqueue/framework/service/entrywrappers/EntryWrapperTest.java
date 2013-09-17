@@ -4,10 +4,14 @@ import com.restqueue.framework.client.common.messageheaders.CustomHeaders;
 import com.restqueue.framework.client.common.serializer.Serializer;
 import com.restqueue.framework.client.common.entryfields.ReturnAddress;
 import com.restqueue.framework.client.common.entryfields.ReturnAddressType;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
+import com.restqueue.framework.service.backingstoreduplicatesfilters.DuplicatesAllowed;
 import com.restqueue.framework.service.exception.SerializationException;
 import com.restqueue.framework.service.transport.ServiceHeaders;
 import com.restqueue.framework.service.transport.ServiceRequest;
 import org.junit.Test;
+
+import javax.ws.rs.core.MediaType;
 
 import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
@@ -51,17 +55,17 @@ public class EntryWrapperTest {
                 addHeader(CustomHeaders.MESSAGE_CONSUMER_ID, messageConsumer).
                 build();
 
-        final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested("application/xml").
+        final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(MediaType.APPLICATION_XML).
                 setBody(content).setServiceHeaders(serviceHeaders).build();
 
         final ReturnAddress emailReturnAddressObject = new ReturnAddress(ReturnAddressType.EMAIL, emailReturnAddress);
         final ReturnAddress urlReturnAddressObject = new ReturnAddress(ReturnAddressType.URL, channelReturnAddress);
 
-        final EntryWrapper newEntryWrapper = new EntryWrapper.EntryWrapperBuilder().buildNow();
+        final EntryWrapper newEntryWrapper = new EntryWrapper();
 
-        newEntryWrapper.updateFromServiceRequest(serviceRequest);
+        new DuplicatesAllowed().updateEntryWrapper(newEntryWrapper, serviceRequest);
 
-        assertEquals(new Serializer().fromType(content,"application/xml"), newEntryWrapper.getContent());
+        assertEquals(new Serializer().fromType(content,MediaType.APPLICATION_XML), newEntryWrapper.getContent());
         assertEquals(messageConsumer, newEntryWrapper.getMessageConsumerId());
         assertNull(newEntryWrapper.getCreator());//should not set this as it is not a mutable field
         assertTrue(!rubbish.equals(newEntryWrapper.getLastUpdated()));//should not set this as it is not a mutable field
@@ -81,18 +85,20 @@ public class EntryWrapperTest {
         final String emailReturnAddress = "me@there.com";
         final String channelReturnAddress = "http://localhost:9998/channels/1.0/stockQueryResultsQueue";
 
-        final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested("application/xml").
+        final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(MediaType.APPLICATION_XML).
                 setBody(content).build();
 
         final ReturnAddress emailReturnAddressObject = new ReturnAddress(ReturnAddressType.EMAIL, emailReturnAddress);
         final ReturnAddress urlReturnAddressObject = new ReturnAddress(ReturnAddressType.URL, channelReturnAddress);
 
-        final EntryWrapper newEntryWrapper = new EntryWrapper.EntryWrapperBuilder().addReturnAddress(emailReturnAddressObject).
-                addReturnAddress(urlReturnAddressObject).setCreator(creator).buildNow();
+        final EntryWrapper newEntryWrapper = new EntryWrapper();
+        newEntryWrapper.setCreator(creator);
+        newEntryWrapper.addReturnAddress(emailReturnAddressObject);
+        newEntryWrapper.addReturnAddress(urlReturnAddressObject);
 
-        newEntryWrapper.updateFromServiceRequest(serviceRequest);
+        new DuplicatesAllowed().updateEntryWrapper(newEntryWrapper, serviceRequest);
 
-        assertEquals(new Serializer().fromType(content,"application/xml"), newEntryWrapper.getContent());
+        assertEquals(new Serializer().fromType(content,MediaType.APPLICATION_XML), newEntryWrapper.getContent());
         assertNull(newEntryWrapper.getMessageConsumerId());
         assertNotNull(newEntryWrapper.getReturnAddresses());
         assertTrue(newEntryWrapper.getReturnAddresses().size()==2);
@@ -104,12 +110,13 @@ public class EntryWrapperTest {
     public void entryWrapperShouldNotUpdateContentIfNull() {
         final String content="content";
 
-        final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested("application/xml").
+        final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(MediaType.APPLICATION_XML).
                 build();
 
-        final EntryWrapper newEntryWrapper = new EntryWrapper.EntryWrapperBuilder().setContent(content).buildNow();
+        final EntryWrapper newEntryWrapper = new EntryWrapper();
+        newEntryWrapper.setContent(content);
 
-        newEntryWrapper.updateFromServiceRequest(serviceRequest);
+        new DuplicatesAllowed().updateEntryWrapper(newEntryWrapper, serviceRequest);
 
         assertEquals(content, newEntryWrapper.getContent());
     }
@@ -118,12 +125,13 @@ public class EntryWrapperTest {
     public void entryWrapperShouldNotUpdateContentIfEmpty() {
         final String content="content";
 
-        final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested("application/xml").
+        final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(MediaType.APPLICATION_XML).
                 setBody("").build();
 
-        final EntryWrapper newEntryWrapper = new EntryWrapper.EntryWrapperBuilder().setContent(content).buildNow();
+        final EntryWrapper newEntryWrapper = new EntryWrapper();
+        newEntryWrapper.setContent(content);
 
-        newEntryWrapper.updateFromServiceRequest(serviceRequest);
+        new DuplicatesAllowed().updateEntryWrapper(newEntryWrapper, serviceRequest);
 
         assertEquals(content, newEntryWrapper.getContent());
     }
@@ -132,12 +140,13 @@ public class EntryWrapperTest {
     public void entryWrapperShouldNotUpdateContentIfBlank() {
         final String content="content";
 
-        final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested("application/xml").
+        final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(MediaType.APPLICATION_XML).
                 setBody("   ").build();
 
-        final EntryWrapper newEntryWrapper = new EntryWrapper.EntryWrapperBuilder().setContent(content).buildNow();
+        final EntryWrapper newEntryWrapper = new EntryWrapper();
+        newEntryWrapper.setContent(content);
 
-        newEntryWrapper.updateFromServiceRequest(serviceRequest);
+        new DuplicatesAllowed().updateEntryWrapper(newEntryWrapper, serviceRequest);
 
         assertEquals(content, newEntryWrapper.getContent());
     }
@@ -146,12 +155,13 @@ public class EntryWrapperTest {
     public void entryWrapperShouldThrowSerializationExceptionIfGivenInvalidContent() {
         final String content="content";
 
-        final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested("application/xml").
+        final ServiceRequest serviceRequest = new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(MediaType.APPLICATION_XML).
                 setBody(content).build();
 
-        final EntryWrapper newEntryWrapper = new EntryWrapper.EntryWrapperBuilder().setContent(content).buildNow();
+        final EntryWrapper newEntryWrapper = new EntryWrapper();
+        newEntryWrapper.setContent(content);
 
-        newEntryWrapper.updateFromServiceRequest(serviceRequest);
+        new DuplicatesAllowed().updateEntryWrapper(newEntryWrapper, serviceRequest);
 
         assertEquals(content, newEntryWrapper.getContent());
     }

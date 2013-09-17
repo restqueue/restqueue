@@ -6,7 +6,7 @@ import com.restqueue.framework.client.common.entryfields.BatchKey;
 import com.restqueue.framework.client.common.entryfields.ReturnAddress;
 import com.restqueue.framework.client.common.entryfields.ReturnAddressType;
 import com.restqueue.framework.service.channelstate.ChannelState;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.server.AbstractServer;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -274,7 +274,8 @@ public class MessageListenerNotificationUnitTest {
 
         messageListenerNotification.registerMessageListener(addressTwo, TEST_URL_TWO, RegistrationPoint.SPECIFIC_BATCH, new Object[]{"BatchID_1"});
 
-        final EntryWrapper entryWrapper = new EntryWrapper.EntryWrapperBuilder().setBatchKey(new BatchKey("BatchID_2",1,1)).build();
+        final EntryWrapper entryWrapper = new EntryWrapper();
+        entryWrapper.setBatchKey(new BatchKey("BatchID_2",1,1));
 
 
         final Map<ReturnAddressType, MessageListenerNotifier> listenerNotifiers = new HashMap<ReturnAddressType, MessageListenerNotifier>();

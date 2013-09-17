@@ -1,6 +1,6 @@
 package com.restqueue.framework.service.backingstorefilters;
 
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -28,12 +28,27 @@ import static org.junit.Assert.assertEquals;
 public class GroupedSequencingFilterTest {
     @Test
     public void filterShouldReturnCorrectGroupGivenAllAvailable(){
+        final EntryWrapper entryWrapperOne = new EntryWrapper();
+        entryWrapperOne.setSequence(2);
+
+        final EntryWrapper entryWrapperTwo = new EntryWrapper();
+        entryWrapperTwo.setSequence(1);
+
+        final EntryWrapper entryWrapperThree = new EntryWrapper();
+        entryWrapperThree.setSequence(3);
+
+        final EntryWrapper entryWrapperFour = new EntryWrapper();
+        entryWrapperFour.setSequence(0);
+
+        final EntryWrapper entryWrapperFive = new EntryWrapper();
+        entryWrapperFive.setSequence(4);
+
         List<EntryWrapper> entryWrappers = new ArrayList<EntryWrapper>();
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(2).build());
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(1).build());
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(3).build());
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(0).build());
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(4).build());
+        entryWrappers.add(entryWrapperOne);
+        entryWrappers.add(entryWrapperTwo);
+        entryWrappers.add(entryWrapperThree);
+        entryWrappers.add(entryWrapperFour);
+        entryWrappers.add(entryWrapperFive);
         final List<EntryWrapper> wrappersReturned = new GroupedSequencingFilter().filter(entryWrappers, null, new Object[]{2L});
 
         assertEquals(3, wrappersReturned.size());
@@ -44,12 +59,27 @@ public class GroupedSequencingFilterTest {
 
     @Test
     public void filterShouldReturnCorrectGroupGivenSomeAvailable(){
+        final EntryWrapper entryWrapperOne = new EntryWrapper();
+        entryWrapperOne.setSequence(2);
+
+        final EntryWrapper entryWrapperTwo = new EntryWrapper();
+        entryWrapperTwo.setSequence(1);
+
+        final EntryWrapper entryWrapperThree = new EntryWrapper();
+        entryWrapperThree.setSequence(3);
+
+        final EntryWrapper entryWrapperFour = new EntryWrapper();
+        entryWrapperFour.setSequence(0);
+
+        final EntryWrapper entryWrapperFive = new EntryWrapper();
+        entryWrapperFive.setSequence(5);
+
         List<EntryWrapper> entryWrappers = new ArrayList<EntryWrapper>();
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(2).build());
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(1).build());
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(3).build());
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(0).build());
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(5).build());
+        entryWrappers.add(entryWrapperOne);
+        entryWrappers.add(entryWrapperTwo);
+        entryWrappers.add(entryWrapperThree);
+        entryWrappers.add(entryWrapperFour);
+        entryWrappers.add(entryWrapperFive);
         final List<EntryWrapper> wrappersReturned = new GroupedSequencingFilter().filter(entryWrappers, null, new Object[]{2L});
 
         assertEquals(2, wrappersReturned.size());
@@ -67,12 +97,27 @@ public class GroupedSequencingFilterTest {
 
     @Test
     public void filterShouldReturnEmptyGroupGivenHigherNextSequenceNumber(){
+        final EntryWrapper entryWrapperOne = new EntryWrapper();
+        entryWrapperOne.setSequence(2);
+
+        final EntryWrapper entryWrapperTwo = new EntryWrapper();
+        entryWrapperTwo.setSequence(1);
+
+        final EntryWrapper entryWrapperThree = new EntryWrapper();
+        entryWrapperThree.setSequence(3);
+
+        final EntryWrapper entryWrapperFour = new EntryWrapper();
+        entryWrapperFour.setSequence(0);
+
+        final EntryWrapper entryWrapperFive = new EntryWrapper();
+        entryWrapperFive.setSequence(4);
+
         List<EntryWrapper> entryWrappers = new ArrayList<EntryWrapper>();
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(2).build());
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(1).build());
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(3).build());
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(0).build());
-        entryWrappers.add(new EntryWrapper.EntryWrapperBuilder().setSequence(4).build());
+        entryWrappers.add(entryWrapperOne);
+        entryWrappers.add(entryWrapperTwo);
+        entryWrappers.add(entryWrapperThree);
+        entryWrappers.add(entryWrapperFour);
+        entryWrappers.add(entryWrapperFive);
         final List<EntryWrapper> wrappersReturned = new GroupedSequencingFilter().filter(entryWrappers, null, new Object[]{8L});
 
         assertEquals(0, wrappersReturned.size());

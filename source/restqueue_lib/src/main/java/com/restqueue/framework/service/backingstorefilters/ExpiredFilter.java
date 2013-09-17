@@ -2,7 +2,7 @@ package com.restqueue.framework.service.backingstorefilters;
 
 import com.restqueue.common.utils.DateUtils;
 import com.restqueue.framework.service.channelstate.ChannelState;
-import com.restqueue.framework.service.entrywrappers.EntryWrapper;
+import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 
 import java.util.ArrayList;
 import java.util.List;

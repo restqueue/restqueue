@@ -3,7 +3,7 @@ package com.restqueue.framework.client.messageupdate;
 import com.restqueue.framework.client.common.messageheaders.CustomHeaders;
 import com.restqueue.framework.client.common.serializer.Serializer;
 import com.restqueue.framework.client.exception.ChannelClientException;
-import com.restqueue.framework.client.results.Result;
+import com.restqueue.framework.client.results.ConditionalPutResult;
 import com.restqueue.framework.client.results.ResultsFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * This class enables you to update a message easily. The general pattern is to set the new headers and content body that you
+ * want to update the message to. You MUST set the URL Location of the message that you want to update and the eTag value
+ * of the current message (as one of the headers using CustomHeaders.IF_MATCH) .<BR/><BR/>
+ *
     * Copyright 2010-2013 Nik Tomkinson
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +56,11 @@ public class BasicMessageUpdater {
         params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
     }
 
-    public Result updateMessage(){
+    /**
+     * This method updates the message given the headers and body that you want to update have been set.
+     * @return The result of the operation giving you access to the http response code and error information
+     */
+    public ConditionalPutResult updateMessage(){
         Object messageBody=null;
         if(stringBody==null && objectBody==null){
             throw new IllegalArgumentException("String body and Object body cannot both be null.");
@@ -126,10 +134,19 @@ public class BasicMessageUpdater {
 
     }
 
+    /**
+     * Set the object body here.
+     * @param objectBody The body of the message.
+     */
     public void setObjectBody(Object objectBody) {
         this.objectBody = objectBody;
     }
 
+    /**
+     * Add a header to the list of headers to update
+     * @param customHeaders The type of header
+     * @param values The header values
+     */
     public void addHeader(CustomHeaders customHeaders, List<String> values){
         if(headerMap.containsKey(customHeaders)){
             headerMap.get(customHeaders).addAll(values);
@@ -139,10 +156,20 @@ public class BasicMessageUpdater {
         }
     }
 
+    /**
+     * Set the full URL of the message to operate on.
+     * (eg. http://{serverip}:{serverport}/channels/1.0/{channelName}/entries/{entryid})
+     */
     public void setUrlLocation(String urlLocation) {
         this.urlLocation = urlLocation;
     }
 
+    /**
+     * This is to set the body if you already have a serialized version of the body of the message. You will need to make
+     * sure that the class of the message body is in the classpath of the server.
+     * @param stringBody The serialized message body
+     * @param asType The serialization format that the stringBody is using.
+     */
     public void setStringBodyAndType(String stringBody, MediaType asType) {
         this.stringBody = stringBody;
         this.asType = asType;
