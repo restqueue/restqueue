@@ -55,6 +55,7 @@ public class BasicChannelManager {
     private String serverIpAddress = "localhost";
     private Integer serverPort = AbstractServer.PORT;
     private static final HttpParams params = new BasicHttpParams();
+
     static{
         params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
     }

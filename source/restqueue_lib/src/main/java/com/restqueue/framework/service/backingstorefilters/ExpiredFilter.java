@@ -25,17 +25,13 @@ import java.util.List;
  * Time: 9:03:21 PM
  */
 public class ExpiredFilter implements BackingStoreFilter {
-    private BackingStoreFilter nextFilter;
-
-    public ExpiredFilter(BackingStoreFilter nextFilter) {
-        this.nextFilter = nextFilter;
-    }
 
     public List<EntryWrapper> filter(List<EntryWrapper> listOfEntries, ChannelState channelState, Object[] arguments) {
 
         final List<EntryWrapper> listOfExpiredEntryWrappers = new ArrayList<EntryWrapper>();
-        for (EntryWrapper entry : nextFilter.filter(listOfEntries, channelState, arguments)) {
-            if (DateUtils.hasExpired(entry.getDelayUntil())) {
+        for (EntryWrapper entry : listOfEntries) {
+
+            if (entry.getDelayUntil()==null || DateUtils.hasExpired(entry.getDelayUntil())) {
                 listOfExpiredEntryWrappers.add(entry);
             }
         }

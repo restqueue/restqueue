@@ -63,6 +63,7 @@ public class BasicMessageConsumer {
     private String responseETag;
     private int responseCode;
     private boolean contentsChanged =true;
+    private boolean unreservedOnly=false;
     private static final HttpParams params = new BasicHttpParams();
     static{
         params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
@@ -98,6 +99,10 @@ public class BasicMessageConsumer {
 
         if(priority!=null){
             fullChannelEndpoint=fullChannelEndpoint+"/priority/"+priority;
+        }
+
+        if(unreservedOnly){
+            fullChannelEndpoint=fullChannelEndpoint+"/unreserved";
         }
 
         final HttpGet httpGet = new HttpGet(fullChannelEndpoint);
@@ -379,6 +384,10 @@ public class BasicMessageConsumer {
 
     public int getResponseCode() {
         return responseCode;
+    }
+
+    public void setUnreservedOnly(boolean unreservedOnly) {
+        this.unreservedOnly = unreservedOnly;
     }
 
     /**

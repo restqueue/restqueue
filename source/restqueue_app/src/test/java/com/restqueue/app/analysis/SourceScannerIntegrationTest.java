@@ -41,7 +41,6 @@ public class SourceScannerIntegrationTest {
             if(candidate.getName().equals("DistinctCupStack")){
                 assertEquals(CandidateType.STACK, candidate.getCandidateType());
                 assertFalse(candidate.isDuplicatesAllowed());
-                assertFalse(candidate.isDelay());
                 assertFalse(candidate.isUnreservedOnly());
                 assertFalse(candidate.isPriority());
                 assertEquals("Cup",candidate.getEntityName());
@@ -50,16 +49,14 @@ public class SourceScannerIntegrationTest {
             else if(candidate.getName().equals("GlassDelayedQueue")){
                 assertEquals(CandidateType.QUEUE, candidate.getCandidateType());
                 assertTrue(candidate.isDuplicatesAllowed());
-                assertTrue(candidate.isDelay());
                 assertFalse(candidate.isUnreservedOnly());
                 assertFalse(candidate.isPriority());
-                assertEquals("Glass",candidate.getEntityName());
+                assertEquals("GlassDelayed",candidate.getEntityName());
                 actualChecksum+=2;
             }
             else if(candidate.getName().equals("GlassQueue")){
                 assertEquals(CandidateType.QUEUE, candidate.getCandidateType());
                 assertTrue(candidate.isDuplicatesAllowed());
-                assertFalse(candidate.isDelay());
                 assertFalse(candidate.isUnreservedOnly());
                 assertFalse(candidate.isPriority());
                 assertEquals("Glass",candidate.getEntityName());
@@ -68,7 +65,6 @@ public class SourceScannerIntegrationTest {
             else if(candidate.getName().equals("BigPlateSequencer")){
                 assertEquals(CandidateType.SEQUENCER, candidate.getCandidateType());
                 assertTrue(candidate.isDuplicatesAllowed());
-                assertFalse(candidate.isDelay());
                 assertFalse(candidate.isUnreservedOnly());
                 assertFalse(candidate.isPriority());
                 assertEquals("BigPlate",candidate.getEntityName());
@@ -77,7 +73,6 @@ public class SourceScannerIntegrationTest {
             else if(candidate.getName().equals("DistinctUnreservedKnivesStack")){
                 assertEquals(CandidateType.STACK, candidate.getCandidateType());
                 assertFalse(candidate.isDuplicatesAllowed());
-                assertFalse(candidate.isDelay());
                 assertTrue(candidate.isUnreservedOnly());
                 assertFalse(candidate.isPriority());
                 assertEquals("Knives",candidate.getEntityName());
@@ -86,16 +81,14 @@ public class SourceScannerIntegrationTest {
             else if(candidate.getName().equals("UnreservedSpoonsSequencer")){
                 assertEquals(CandidateType.SEQUENCER, candidate.getCandidateType());
                 assertTrue(candidate.isDuplicatesAllowed());
-                assertFalse(candidate.isDelay());
                 assertTrue(candidate.isUnreservedOnly());
                 assertFalse(candidate.isPriority());
                 assertEquals("Spoons",candidate.getEntityName());
                 actualChecksum+=32;
             }
-            else if(candidate.getName().equals("DistinctDelayedUnreservedSaucerStack")){
+            else if(candidate.getName().equals("DistinctUnreservedSaucerStack")){
                 assertEquals(CandidateType.STACK, candidate.getCandidateType());
                 assertFalse(candidate.isDuplicatesAllowed());
-                assertTrue(candidate.isDelay());
                 assertTrue(candidate.isUnreservedOnly());
                 assertFalse(candidate.isPriority());
                 assertEquals("Saucer",candidate.getEntityName());
@@ -104,7 +97,6 @@ public class SourceScannerIntegrationTest {
             else if(candidate.getName().equals("PriorityDishStack")){
                 assertEquals(CandidateType.STACK, candidate.getCandidateType());
                 assertTrue(candidate.isDuplicatesAllowed());
-                assertFalse(candidate.isDelay());
                 assertFalse(candidate.isUnreservedOnly());
                 assertTrue(candidate.isPriority());
                 assertEquals("Dish",candidate.getEntityName());
@@ -113,7 +105,6 @@ public class SourceScannerIntegrationTest {
             else if(candidate.getName().equals("TeaSpoonPool")){
                 assertEquals(CandidateType.POOL, candidate.getCandidateType());
                 assertTrue(candidate.isDuplicatesAllowed());
-                assertFalse(candidate.isDelay());
                 assertFalse(candidate.isUnreservedOnly());
                 assertFalse(candidate.isPriority());
                 assertEquals("TeaSpoon",candidate.getEntityName());
@@ -122,7 +113,6 @@ public class SourceScannerIntegrationTest {
             else if(candidate.getName().equals("PriorityMyDelayedOrdersQueue")){
                 assertEquals(CandidateType.QUEUE, candidate.getCandidateType());
                 assertTrue(candidate.isDuplicatesAllowed());
-                assertFalse(candidate.isDelay());
                 assertFalse(candidate.isUnreservedOnly());
                 assertTrue(candidate.isPriority());
                 assertEquals("MyDelayedOrders",candidate.getEntityName());
@@ -131,7 +121,6 @@ public class SourceScannerIntegrationTest {
             else if(candidate.getName().equals("DistinctMyQueueTimingsPool")){
                 assertEquals(CandidateType.POOL, candidate.getCandidateType());
                 assertFalse(candidate.isDuplicatesAllowed());
-                assertFalse(candidate.isDelay());
                 assertFalse(candidate.isUnreservedOnly());
                 assertFalse(candidate.isPriority());
                 assertEquals("MyQueueTimings",candidate.getEntityName());
@@ -140,10 +129,9 @@ public class SourceScannerIntegrationTest {
             else if(candidate.getName().equals("BasicMessageDelayQueue")){
                 assertEquals(CandidateType.QUEUE, candidate.getCandidateType());
                 assertTrue(candidate.isDuplicatesAllowed());
-                assertTrue(candidate.isDelay());
                 assertFalse(candidate.isUnreservedOnly());
                 assertFalse(candidate.isPriority());
-                assertEquals("BasicMessage",candidate.getEntityName());
+                assertEquals("BasicMessageDelay",candidate.getEntityName());
                 actualChecksum+=2048;
             }
         }

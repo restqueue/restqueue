@@ -75,6 +75,7 @@ public class ChannelResourceDelegate {
         if (!ServerArguments.getInstance().getBooleanArgument(AbstractServer.NO_CACHE_SWITCH) &&
                 serviceRequest.getServiceHeaders().getHeaderValueList(CustomHeaders.IF_NONE_MATCH) != null &&
                 serviceRequest.getServiceHeaders().getHeaderValueList(CustomHeaders.IF_NONE_MATCH).size() != 0 &&
+                !backingStore.justRevealedNewMessages() &&
                 Long.valueOf(serviceRequest.getServiceHeaders().getHeaderValueList(CustomHeaders.IF_NONE_MATCH).get(0)).equals(backingStore.getLastUpdated())) {
             final ServiceHeaders headers = new ServiceHeaders.ServiceHeadersBuilder().
                     addHeader(CustomHeaders.ETAG, backingStore.getLastUpdated()).
@@ -417,6 +418,11 @@ public class ChannelResourceDelegate {
         return new ServiceResponse.ServiceResponseBuilder().setBody(contentsString).setReturnCode(200).build();
     }
 
+    public ServiceResponse getUnreservedChannelContentsAsType(ServiceRequest serviceRequest) {
+        final String contentsString = backingStore.serializeUnreservedContentsAsSummariesToType(serviceRequest.getMediaTypeRequested());
+        return new ServiceResponse.ServiceResponseBuilder().setBody(contentsString).setReturnCode(200).build();
+    }
+
     public ServiceResponse takeSnapshot(ServiceRequest serviceRequest){
         log.info("Attempting to take snapshot of channel:"+channelEndPoint);
         final String fileDateId;
@@ -582,5 +588,10 @@ public class ChannelResourceDelegate {
         final String registrationUrl = serviceRequest.getParameter("registrationUrl");
         return new ServiceResponse.ServiceResponseBuilder().setReturnCode(200).
                 setBody(new Serializer().toType(messageListenerNotification.getMessageListeners(registrationUrl), serviceRequest.getMediaTypeRequested())).build();
+    }
+
+    public ServiceResponse getShutdownConfirmPage(final ServiceRequest serviceRequest){
+        return new ServiceResponse.ServiceResponseBuilder().setReturnCode(200).
+                setBody(new Serializer().toType(null, serviceRequest.getMediaTypeRequested(), "shutdownConfirmation")).build();
     }
 }

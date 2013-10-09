@@ -12,7 +12,10 @@ import com.restqueue.framework.web.servicetransform.ServiceHeadersTransform;
 import com.restqueue.framework.web.servicetransform.ServiceResponseTransform;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.URISyntaxException;
 
 /**
@@ -393,6 +396,34 @@ public abstract class AbstractQueueResource {
         final ServiceRequest serviceRequest=new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(asType).
                 addParameter("batchId",batchId).build();
         return ServiceResponseTransform.httpResponseFromServiceResponse(channelResourceDelegate.getBatchedChannelContentsAsType(serviceRequest));
+    }
+
+    //GET methods for unreserved messages only
+
+    @GET
+    @Path("/entries/unreserved")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUnreservedChannelContentsAsJson() {
+        return getUnreservedChannelContentsAsType(MediaType.APPLICATION_JSON);
+    }
+
+    @GET
+    @Path("/entries/unreserved")
+    @Produces(MediaType.APPLICATION_XML)
+    public Response getUnreservedChannelContentsAsXml() {
+        return getUnreservedChannelContentsAsType(MediaType.APPLICATION_XML);
+    }
+
+    @GET
+    @Path("/entries/unreserved")
+    @Produces(MediaType.TEXT_HTML)
+    public Response getUnreservedChannelContentsAsXhtml() {
+        return getUnreservedChannelContentsAsType(MediaType.TEXT_HTML);
+    }
+
+    private Response getUnreservedChannelContentsAsType(String asType) {
+        final ServiceRequest serviceRequest=new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(asType).build();
+        return ServiceResponseTransform.httpResponseFromServiceResponse(channelResourceDelegate.getUnreservedChannelContentsAsType(serviceRequest));
     }
 
     //POST methods to create new snapshot
@@ -839,4 +870,14 @@ public abstract class AbstractQueueResource {
         final ServiceRequest serviceRequest= serviceRequestBuilder.setMediaTypeRequested(asType).setServiceHeaders(serviceHeaders).build();
         return ServiceResponseTransform.httpResponseFromServiceResponse(channelResourceDelegate.unRegisterMessageListener(serviceRequest));
     }
+
+    @GET
+    @Path("/shutdownconfirmation")
+    @Produces(MediaType.TEXT_HTML)
+    public Response confirmShutdown(){
+        return ServiceResponseTransform.httpResponseFromServiceResponse(
+                channelResourceDelegate.getShutdownConfirmPage(
+                        new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(MediaType.TEXT_HTML).build()));
+    }
+
 }

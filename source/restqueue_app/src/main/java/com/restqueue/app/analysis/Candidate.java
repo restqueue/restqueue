@@ -28,7 +28,6 @@ import java.util.List;
 public class Candidate {
     private CandidateType candidateType;
     private boolean duplicatesAllowed=true;
-    private boolean delay=false;
     private boolean unreservedOnly=false;
     private String name;
     private String entityName;
@@ -93,13 +92,7 @@ public class Candidate {
         final StringBuilder entityNameBuilder = new StringBuilder();
         for (int i = 0; i < fileNameSplit.length; i++) {
             String part = fileNameSplit[i];
-            if ((i<firstNonKeyword || i>lastNonKeyword) && part.equals("Delayed")) {
-                candidate.delay = true;
-            }
-            else if ((i<firstNonKeyword || i>lastNonKeyword) && part.equals("Delay")) {
-                candidate.delay = true;
-            }
-            else if ((i<firstNonKeyword || i>lastNonKeyword) && part.equals("Distinct")) {
+            if ((i<firstNonKeyword || i>lastNonKeyword) && part.equals("Distinct")) {
                 candidate.duplicatesAllowed = false;
             }
             else if ((i<firstNonKeyword || i>lastNonKeyword) && part.equals("Unreserved")) {
@@ -139,10 +132,6 @@ public class Candidate {
         return duplicatesAllowed;
     }
 
-    public boolean isDelay() {
-        return delay;
-    }
-
     public String getName() {
         return name;
     }
@@ -168,7 +157,6 @@ public class Candidate {
         return "Candidate{" +
                 "candidateType=" + candidateType +
                 ", duplicatesAllowed=" + duplicatesAllowed +
-                ", delay=" + delay +
                 ", unreservedOnly=" + unreservedOnly +
                 ", name='" + name + '\'' +
                 ", entityName='" + entityName + '\'' +

@@ -20,7 +20,7 @@ package com.restqueue.framework.client.common.entryfields;
  * Date: Jan 8, 2011
  * Time: 7:55:58 PM
  */
-public enum ReturnAddressType {URL("url"),EMAIL("email"),SMS("sms"),POSTAL("postal"),FAX("fax"),LOGFILE("logfile"), TELEPHONE("telephone");
+public enum ReturnAddressType {URL("url"),EMAIL("email"),SMS("sms"),POSTAL("postal"),FAX("fax"),LOGFILE("logfile"), TELEPHONE("telephone"), SKYPE("skype");
     private String description;
 
     ReturnAddressType(String description) {

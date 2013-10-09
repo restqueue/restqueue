@@ -1,9 +1,8 @@
 package com.restqueue.framework.service.backingstorefilters;
 
-import com.restqueue.framework.service.channelstate.ChannelState;
 import com.restqueue.framework.client.entrywrappers.EntryWrapper;
+import com.restqueue.framework.service.channelstate.ChannelState;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,8 +24,10 @@ import java.util.List;
  * Time: 8:31:13 PM
  */
 public class ShuffledFilter implements BackingStoreFilter{
+    private BackingStoreFilter expiredFilter = new ExpiredFilter();
+
     public List<EntryWrapper> filter(List<EntryWrapper> listOfEntries, ChannelState channelState, Object[] arguments) {
-        final List<EntryWrapper> shuffledList = new ArrayList<EntryWrapper>(listOfEntries);
+        final List<EntryWrapper> shuffledList = expiredFilter.filter(listOfEntries, channelState, arguments);
         Collections.shuffle(shuffledList);
         return shuffledList;
     }

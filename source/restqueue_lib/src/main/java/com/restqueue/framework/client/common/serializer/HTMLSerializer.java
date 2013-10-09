@@ -31,6 +31,9 @@ import java.util.Map;
 public class HTMLSerializer {
     @SuppressWarnings("unchecked")
     public String serialize(Object object, final String... arguments) {
+        if(object == null && arguments[0].equalsIgnoreCase("shutdownConfirmation")){
+            return serializeShutdownConfirmationPage();
+        }
         if (object instanceof List) {
             if (arguments.length > 0 && arguments[0].equals("snapshotList")) {
                 return serializeSnapshotList((List<Object>) object);
@@ -54,6 +57,20 @@ public class HTMLSerializer {
         stringBuilder.append("</body></html>");
 
         return stringBuilder.toString();
+    }
+
+    private String serializeShutdownConfirmationPage(){
+        final StringBuilder stringBuilder = new StringBuilder("<html><head><title>Registered Consumers</title>" +
+                "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"></head><body");
+        addStyleStart(stringBuilder);
+        addBlackBackground(stringBuilder);
+        addStyleEnd(stringBuilder);
+        stringBuilder.append(">");
+
+        stringBuilder.append("<FORM style=\"display: inline\" METHOD=POST ACTION=\"/control/1.0/stopserver\">" +
+                        "<BUTTON name=\"shutdownserver\" value=\"Shut Down Server\" type=\"submit\">Shut Down Server</BUTTON></FORM>");
+
+        return stringBuilder.append("</body></html>").toString();
     }
 
     public String serializeList(List<Object> objectList, final String... arguments) {
@@ -115,12 +132,6 @@ public class HTMLSerializer {
         addBlackBackground(stringBuilder);
         addStyleEnd(stringBuilder);
         stringBuilder.append(">");
-//        " style=\"" +
-//                "background-image:url('http://www.fetomkinson.com/gc_res72ppi_soon_web_800x533.png');" +
-//                "background-attachment: fixed;" +
-//                "background-position: 50% 50%;" +
-//                "background-repeat: no-repeat;" +
-//                "background-color: #000000\">");
 
         stringBuilder.append("<TABLE border=\"0px\" cellpadding=\"4\" cellspacing=\"1\" bgcolor=\"#999999\">");
         stringBuilder.append("<TR><TH bgcolor=\"#f0f0f0\"><font size=\"3\" face=\"arial\" color=\"#000000\">Links</font></TH>" +

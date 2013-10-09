@@ -46,12 +46,13 @@ public abstract class AbstractServer {
     private Thread persistenceThread;
 
     public void startUpServer(String[] arguments) throws IOException {
-        allowedArguments.add(new ArgumentMetaData(HEAD_LESS,"Head-less", ArgumentMetaData.ArgumentMetaDataType.BOOLEAN, true));
-        allowedArguments.add(new ArgumentMetaData(SPECIFIED_PORT_SWITCH,"Port", ArgumentMetaData.ArgumentMetaDataType.INTEGER, PORT));
-        allowedArguments.add(new ArgumentMetaData(NO_CACHE_SWITCH,"No Cache", ArgumentMetaData.ArgumentMetaDataType.BOOLEAN, false));
-        allowedArguments.add(new ArgumentMetaData(SPECIFIED_PERSISTENCE_SWITCH, "Persistence", ArgumentMetaData.ArgumentMetaDataType.STRING, "Normal"));
+        allowedArguments.add(new ArgumentMetaData(HEAD_LESS,"Headless", ArgumentMetaData.ArgumentMetaDataType.BOOLEAN, true, null));
+        allowedArguments.add(new ArgumentMetaData(SPECIFIED_PORT_SWITCH,"Port", ArgumentMetaData.ArgumentMetaDataType.INTEGER, PORT, null));
+        allowedArguments.add(new ArgumentMetaData(NO_CACHE_SWITCH,"No Cache", ArgumentMetaData.ArgumentMetaDataType.BOOLEAN, false, null));
+        allowedArguments.add(new ArgumentMetaData(SPECIFIED_PERSISTENCE_SWITCH, "Persistence", ArgumentMetaData.ArgumentMetaDataType.STRING, "Normal",
+                new String[]{"Normal","Polling","ReadOnly","None"}));
         allowedArguments.add(new ArgumentMetaData(SPECIFIED_PERSISTENCE_FREQUENCY_SWITCH, "Persistence Frequency in seconds",
-                ArgumentMetaData.ArgumentMetaDataType.INTEGER, 30000));
+                ArgumentMetaData.ArgumentMetaDataType.INTEGER, 30000, null));
         ServerArguments.createInstance(allowedArguments, arguments);
 
         PORT = ServerArguments.getInstance().getIntegerArgument(SPECIFIED_PORT_SWITCH);
@@ -70,8 +71,6 @@ public abstract class AbstractServer {
                 new HashMap<String, String>();
 
         initParameters.put("com.sun.jersey.config.property.packages", "com.restqueue.gen.web,com.restqueue.control");
-
-        log.info("Server using RESTQueue lib version:1.1");
 
         log.info("Starting server using port "+PORT);
         SelectorThread threadSelector =

@@ -51,6 +51,7 @@ public class BasicMessageUpdater {
     private Object objectBody;
     private MediaType asType;
     private String urlLocation;
+    private String eTag;
     private static final HttpParams params = new BasicHttpParams();
     static{
         params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
@@ -77,6 +78,10 @@ public class BasicMessageUpdater {
         if(urlLocation==null){
             throw new IllegalArgumentException("The Channel Endpoint must be set.");
         }
+        if(eTag==null){
+            throw new ChannelClientException("Must set the eTag value to update a message.",
+                    ChannelClientException.ExceptionType.MISSING_DATA);
+        }
 
         if(messageBody instanceof String && asType==null){
             throw new IllegalArgumentException("The type must be set when using a String body.");
@@ -97,22 +102,13 @@ public class BasicMessageUpdater {
             httpPut.setEntity(new BasicHttpEntity());
         }
 
-        boolean headersProvidedContainsIfMatch=false;
-
         for (Map.Entry<CustomHeaders, List<String>> entry : headerMap.entrySet()) {
             for (String headerValue : entry.getValue()) {
                 httpPut.addHeader(entry.getKey().getName(), headerValue);
-                if(CustomHeaders.IF_MATCH.getName().equals(entry.getKey().getName())){
-                    headersProvidedContainsIfMatch=true;
-                }
             }
         }
 
-        if(!headersProvidedContainsIfMatch){
-            throw new ChannelClientException("An If-Match header MUST be provided to update the message. " +
-                    "Make sure you get the message detail first and use the ETag value from the response.",
-                    ChannelClientException.ExceptionType.MISSING_DATA);
-        }
+        httpPut.addHeader(CustomHeaders.IF_MATCH.getName(), eTag);
 
         DefaultHttpClient client = new DefaultHttpClient(params);
         try {
@@ -173,5 +169,9 @@ public class BasicMessageUpdater {
     public void setStringBodyAndType(String stringBody, MediaType asType) {
         this.stringBody = stringBody;
         this.asType = asType;
+    }
+
+    public void setETag(String eTag) {
+        this.eTag = eTag;
     }
 }

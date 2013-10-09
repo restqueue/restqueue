@@ -73,7 +73,8 @@ public class DuplicatesNotAllowed extends BackingStoreDuplicatesFilter {
                     throw new ChannelStoreException(message,ChannelStoreException.ExceptionType.DUPLICATE_MESSAGE_DATA_NOT_ALLOWED);
                 }
                 if(batchKey!=null && batchKey.equals(entryWrapper.getBatchKey())){
-                    final String message = "Messages with duplicate batch keys are not allowed";
+                    final String message = "" +
+                            "";
                     log.warn(message);
                     throw new ChannelStoreException(message,
                             ChannelStoreException.ExceptionType.DUPLICATE_MESSAGE_DATA_NOT_ALLOWED);

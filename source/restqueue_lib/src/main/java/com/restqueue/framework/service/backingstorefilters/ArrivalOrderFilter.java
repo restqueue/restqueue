@@ -24,7 +24,9 @@ import java.util.List;
  * Time: 8:29:41 PM
  */
 public class ArrivalOrderFilter implements BackingStoreFilter{
+    private BackingStoreFilter expiredFilter = new ExpiredFilter();
+
     public List<EntryWrapper> filter(List<EntryWrapper> listOfEntries, ChannelState channelState, Object[] arguments) {
-        return new ArrayList<EntryWrapper>(listOfEntries);
+        return expiredFilter.filter(listOfEntries, channelState, arguments);
     }
 }

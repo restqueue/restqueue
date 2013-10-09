@@ -1,9 +1,8 @@
 package com.restqueue.framework.service.backingstorefilters;
 
-import com.restqueue.framework.service.channelstate.ChannelState;
 import com.restqueue.framework.client.entrywrappers.EntryWrapper;
+import com.restqueue.framework.service.channelstate.ChannelState;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,8 +24,10 @@ import java.util.List;
  * Time: 8:48:14 PM
  */
 public class ReverseArrivalOrderFilter implements BackingStoreFilter {
+    private BackingStoreFilter expiredFilter = new ExpiredFilter();
+
     public List<EntryWrapper> filter(List<EntryWrapper> listOfEntries, ChannelState channelState, Object[] arguments) {
-        final List<EntryWrapper> reversedList = new ArrayList<EntryWrapper>(listOfEntries);
+        final List<EntryWrapper> reversedList = expiredFilter.filter(listOfEntries, channelState, arguments);
         Collections.reverse(reversedList);
         return reversedList;
     }

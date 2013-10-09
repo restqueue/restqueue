@@ -55,7 +55,7 @@ public class DuplicatesAllowed extends BackingStoreDuplicatesFilter{
         if(entryToUpdate.getBatchKey()!=null){
             final BatchKey batchKey = entryToUpdate.getBatchKey();
             for(EntryWrapper entryWrapper:listToUpdate){
-                if(batchKey!=null && batchKey.equals(entryWrapper.getBatchKey())){
+                if(!entryWrapper.getEntryId().equals(entryToUpdate.getEntryId()) && batchKey!=null && batchKey.equals(entryWrapper.getBatchKey())){
                     final String message = "Messages with duplicate batch keys are not allowed";
                     log.warn(message);
                     throw new ChannelStoreException(message,

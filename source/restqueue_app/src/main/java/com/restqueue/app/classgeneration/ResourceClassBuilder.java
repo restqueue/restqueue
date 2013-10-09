@@ -125,10 +125,6 @@ public class ResourceClassBuilder extends AbstractSourceBuilder {
             filterClassNames.add("new PriorityDescendingFilter({0})");
             imports.add("com.restqueue.framework.service.backingstorefilters.PriorityDescendingFilter");
         }
-        if(candidate.isDelay()){
-            filterClassNames.add("new ExpiredFilter({0})");
-            imports.add("com.restqueue.framework.service.backingstorefilters.ExpiredFilter");
-        }
         imports.add("com.restqueue.framework.service.backingstorefilters.BackingStoreFilter");
 
         String chainResult = "";

@@ -42,9 +42,10 @@ public class Setup {
         try {
             //validate arguments (include-test-branch, exclude-directories, etc)
             log.info("----- Validating command line arguments -----");
-            allowedArguments.add(new ArgumentMetaData(INCLUDE_TEST_BRANCH_SWITCH,"Include Test Branch", ArgumentMetaData.ArgumentMetaDataType.STRING, "Exclude"));
-            allowedArguments.add(new ArgumentMetaData(SPECIFIED_TEST_BRANCH_ROOT_SWITCH,"Specified Test Branch", ArgumentMetaData.ArgumentMetaDataType.STRING,null));
-            allowedArguments.add(new ArgumentMetaData(SPECIFIED_MAIN_BRANCH_ROOT_SWITCH, "Specified Main Branch", ArgumentMetaData.ArgumentMetaDataType.STRING, null));
+            allowedArguments.add(new ArgumentMetaData(INCLUDE_TEST_BRANCH_SWITCH,"Include Test Branch", ArgumentMetaData.ArgumentMetaDataType.STRING, "Exclude",
+                    new String[]{"Include","Exclude"}));
+            allowedArguments.add(new ArgumentMetaData(SPECIFIED_TEST_BRANCH_ROOT_SWITCH,"Specified Test Branch", ArgumentMetaData.ArgumentMetaDataType.STRING, null,null));
+            allowedArguments.add(new ArgumentMetaData(SPECIFIED_MAIN_BRANCH_ROOT_SWITCH, "Specified Main Branch", ArgumentMetaData.ArgumentMetaDataType.STRING, null,null));
             ServerArguments.createInstance(allowedArguments, args);
             log.info("----- Command line arguments OK -----");
 

@@ -34,28 +34,31 @@ public class ExpiredFilterTest {
         entryWrapper0.setDelay("10");
         final EntryWrapper entryWrapper4 = new EntryWrapper();
         entryWrapper4.setDelay("20");
+        final EntryWrapper entryWrapperNull = new EntryWrapper();
+        entryWrapperNull.setDelay("0s");
 
         listOfEntryWrappersBefore.add(entryWrapper0);
         listOfEntryWrappersBefore.add(entryWrapper4);
+        listOfEntryWrappersBefore.add(entryWrapperNull);
 
-        List<EntryWrapper> listOfEntryWrappersAfter = new ExpiredFilter(new ArrivalOrderFilter()).
+        List<EntryWrapper> listOfEntryWrappersAfter = new ExpiredFilter().
                         filter(listOfEntryWrappersBefore, null, new Object[0]);
-        assertEquals(0,listOfEntryWrappersAfter.size());
+        assertEquals(1,listOfEntryWrappersAfter.size());
 
         Thread.sleep(11000);
 
-        listOfEntryWrappersAfter = new ExpiredFilter(new ArrivalOrderFilter()).
+        listOfEntryWrappersAfter = new ExpiredFilter().
                 filter(listOfEntryWrappersBefore, null, new Object[0]);
 
-        assertEquals(1, listOfEntryWrappersAfter.size());
+        assertEquals(2, listOfEntryWrappersAfter.size());
 
         //wait another 10 seconds
         Thread.sleep(10000);
 
-        listOfEntryWrappersAfter = new ExpiredFilter(new ArrivalOrderFilter()).
+        listOfEntryWrappersAfter = new ExpiredFilter().
                 filter(listOfEntryWrappersBefore, null, new Object[0]);
 
-        assertEquals(2, listOfEntryWrappersAfter.size());
+        assertEquals(3, listOfEntryWrappersAfter.size());
 
     }
 }

@@ -26,6 +26,8 @@ import java.util.Map;
  * Time: 8:39:20 PM
  */
 public class SequencingFilter implements BackingStoreFilter{
+    private BackingStoreFilter expiredFilter = new ExpiredFilter();
+
     private static Map<SequenceStrategy, BackingStoreFilter> sequenceStrategyFilters =new HashMap<SequenceStrategy, BackingStoreFilter>();
 
     static{
@@ -34,8 +36,9 @@ public class SequencingFilter implements BackingStoreFilter{
     }
 
     public List<EntryWrapper> filter(List<EntryWrapper> listOfEntries, ChannelState channelState, Object[] arguments) {
-            return sequenceStrategyFilters.get(SequenceStrategy.valueOf(
-                    String.valueOf(channelState.getFieldValue(ChannelState.SEQUENCE_STRATEGY)))).
-                    filter(listOfEntries, channelState, new Object[]{channelState.getNextMessageSequence()});
+        final List<EntryWrapper> entryWrappers = expiredFilter.filter(listOfEntries, channelState, arguments);
+        final BackingStoreFilter filter = sequenceStrategyFilters.get(SequenceStrategy.valueOf(
+                String.valueOf(channelState.getFieldValue(ChannelState.SEQUENCE_STRATEGY))));
+        return filter.filter(entryWrappers, channelState, new Object[]{channelState.getNextMessageSequence()});
     }
 }

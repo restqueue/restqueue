@@ -1,12 +1,12 @@
 package com.restqueue.framework.service.backingstore;
 
+import com.restqueue.common.utils.DateUtils;
+import com.restqueue.common.utils.StringUtils;
+import com.restqueue.framework.client.common.messageheaders.CustomHeaders;
 import com.restqueue.framework.client.common.serializer.Serializer;
 import com.restqueue.framework.client.common.summaryfields.EndPoint;
 import com.restqueue.framework.service.backingstoreduplicatesfilters.BackingStoreDuplicatesFilter;
-import com.restqueue.framework.service.backingstorefilters.BackingStoreFilter;
-import com.restqueue.framework.service.backingstorefilters.BatchingFilter;
-import com.restqueue.framework.service.backingstorefilters.PriorityDescendingFilter;
-import com.restqueue.framework.service.backingstorefilters.SpecificPriorityFilter;
+import com.restqueue.framework.service.backingstorefilters.*;
 import com.restqueue.framework.service.channelstate.ChannelState;
 import com.restqueue.framework.client.entrywrappers.EntrySummary;
 import com.restqueue.framework.client.entrywrappers.EntryWrapper;
@@ -16,6 +16,7 @@ import com.restqueue.framework.service.persistence.*;
 import com.restqueue.framework.service.transport.ServiceRequest;
 import org.apache.log4j.Logger;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -147,6 +148,10 @@ public final class ChannelBackingStore {
         return batchFilter.filter(backingList, this.channelState, new Object[]{batchId});
     }
 
+    private List<EntryWrapper> toUnreservedList() {
+        return new AllUnreservedFilter(backingStoreFilter).filter(backingList, this.channelState, null);
+    }
+
     public String serializeAvailableContentsAsSummariesToType(String asType) {
         final List<EntrySummary> entrySummaries=new ArrayList<EntrySummary>();
         for(EntryWrapper entryWrapper:toAvailableList()){
@@ -179,13 +184,6 @@ public final class ChannelBackingStore {
         endPoints.add(new EndPoint.EndPointBuilder().setDescription("Available Channel Contents").
                 setShortCode("AVAILABLE_CHANNEL_CONTENTS").setUrl(channelBaseUrl + "/entries").build());
 
-        endPoints.add(new EndPoint.EndPointBuilder().setDescription("Add Message To Channel").
-                setShortCode("ADD_MESSAGE_TO_CHANNEL").setUrl(channelBaseUrl + "/entries").setHttpMethod(EndPoint.POST).
-                setAccepts(EndPoint.DEFAULT_MEDIA_TYPES).build());
-
-        endPoints.add(new EndPoint.EndPointBuilder().setDescription("Current Channel State").
-                setShortCode("CURRENT_CHANNEL_STATE").setUrl(channelBaseUrl + "/state").build());
-
         endPoints.add(new EndPoint.EndPointBuilder().setDescription("Prioritised Available Channel Contents").
                 setShortCode("AVAILABLE_PRIORITISED_CHANNEL_CONTENTS").setUrl(channelBaseUrl + "/entries/priority/all").build());
 
@@ -195,7 +193,7 @@ public final class ChannelBackingStore {
                     setShortCode(entry.getKey().toUpperCase() + "_PRIORITY_CHANNEL_CONTENTS").
                     setUrl(channelBaseUrl + "/entries/priority/" + entry.getKey()).build());
         }
-        
+
         final List<String> currentBatches = (List<String>)channelState.getFieldValue(ChannelState.CURRENT_BATCHES);
         for (String currentBatch : currentBatches) {
             endPoints.add(new EndPoint.EndPointBuilder().setDescription("Batch "+currentBatch + " Contents").
@@ -203,11 +201,20 @@ public final class ChannelBackingStore {
                     setUrl(channelBaseUrl+"/entries/batch/"+currentBatch).build());
         }
 
+        endPoints.add(new EndPoint.EndPointBuilder().setDescription("Unreserved Messages").
+                setShortCode("UNRESERVED_MESSAGES").setUrl(channelBaseUrl + "/entries/unreserved").build());
+
+        endPoints.add(new EndPoint.EndPointBuilder().setDescription("Current Channel State").
+                setShortCode("CURRENT_CHANNEL_STATE").setUrl(channelBaseUrl + "/state").build());
+
         endPoints.add(new EndPoint.EndPointBuilder().setDescription("Channel Snapshots").
                 setShortCode("CHANNEL_SNAPSHOTS").setUrl(channelBaseUrl + "/snapshots").build());
 
         endPoints.add(new EndPoint.EndPointBuilder().setDescription("Message Listeners").
                 setShortCode("MESSAGE_LISTENERS").setUrl(channelBaseUrl + "/registration/messagelisteners").build());
+
+        endPoints.add(new EndPoint.EndPointBuilder().setDescription("Shutdown Server").setShortCode("SHUTDOWN_SERVER").
+        setUrl(channelBaseUrl+"/shutdownconfirmation").build());
 
         return new Serializer().toType(endPoints, asType);
     }
@@ -275,6 +282,14 @@ public final class ChannelBackingStore {
 
     public void updateSpecifiedEntryFromType(final EntryWrapper entryWrapperToUpdate, final ServiceRequest serviceRequest){
         try {
+            if(entryWrapperToUpdate.getMessageConsumerId()==null && serviceRequest.getServiceHeaders().hasHeaderValue(CustomHeaders.MESSAGE_CONSUMER_ID)){
+                log.info("Assigning message "+entryWrapperToUpdate.getEntryId()+" to "+
+                        serviceRequest.getServiceHeaders().getSingleStringHeaderValueFromHeaders(CustomHeaders.MESSAGE_CONSUMER_ID));
+                if(backingStoreFilter instanceof SequencingFilter){
+                    //this channel is configured as a sequencer and this is an initial assignment so increase the nextMessageSequence by one
+                    channelState.put("nextMessageSequence", String.valueOf(entryWrapperToUpdate.getSequence()+1));
+                }
+            }
             backingStoreDuplicatesFilter.updateFromServiceRequest(entryWrapperToUpdate, serviceRequest, backingList);
 
             lastUpdated=System.currentTimeMillis();
@@ -323,6 +338,11 @@ public final class ChannelBackingStore {
         final HashMap<String, Object> changesMap = new HashMap<String, Object>();
         changesMap.put(Persistence.CHANNEL_STATE_KEY, channelState);
         persistence.saveUpdated(associatedChannelResourceClazz, changesMap);
+
+        //if the updated field might have an effect on the available contents - update the last changed date
+        if(Arrays.asList("nextMessageSequence").contains(stateField)){
+            lastUpdated=System.currentTimeMillis();
+        }
     }
 
     public Object getChannelPriorityFieldValue(String priority) {
@@ -359,6 +379,14 @@ public final class ChannelBackingStore {
         return serializeContentsAsSummariesToType(entrySummaries, asType);
     }
 
+    public String serializeUnreservedContentsAsSummariesToType(String asType) {
+        final List<EntrySummary> entrySummaries=new ArrayList<EntrySummary>();
+        for(EntryWrapper entryWrapper: toUnreservedList()){
+            entrySummaries.add(EntrySummary.fromEntryWrapper(entryWrapper));
+        }
+        return serializeContentsAsSummariesToType(entrySummaries, asType);
+    }
+
     public List<String> serializeSnapshotListToType() {
         return snapshot.getSnapshotList(associatedChannelResourceClazz);
     }
@@ -383,5 +411,24 @@ public final class ChannelBackingStore {
 
     public long getLastUpdated() {
         return lastUpdated;
+    }
+
+    public boolean justRevealedNewMessages(){
+        for (EntryWrapper entryWrapper : toList()) {
+            if(StringUtils.isNotNullAndNotEmpty(entryWrapper.getDelayUntil())){
+                try {
+                    if(DateUtils.unreadableDate(entryWrapper.getDelayUntil())>lastUpdated &&
+                            DateUtils.hasExpired(entryWrapper.getDelayUntil())){
+                        lastUpdated=System.currentTimeMillis();
+                        return true;
+                    }
+                }
+                catch (ParseException e) {
+                    throw new ChannelStoreException("Invalid delay-until value:"+entryWrapper.getDelayUntil(),
+                            ChannelStoreException.ExceptionType.INVALID_ENTRY_DATA_PROVIDED);
+                }
+            }
+        }
+        return false;
     }
 }
