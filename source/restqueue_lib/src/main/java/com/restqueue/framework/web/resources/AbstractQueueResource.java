@@ -3,6 +3,8 @@ package com.restqueue.framework.web.resources;
 import com.restqueue.framework.service.backingstore.ChannelBackingStoreRepository;
 import com.restqueue.framework.service.backingstoreduplicatesfilters.BackingStoreDuplicatesFilter;
 import com.restqueue.framework.service.backingstorefilters.BackingStoreFilter;
+import com.restqueue.framework.service.channels.ChannelMetadata;
+import com.restqueue.framework.service.channels.ChannelsRegistry;
 import com.restqueue.framework.service.notification.MessageListenerNotificationRepository;
 import com.restqueue.framework.service.notification.RegistrationPoint;
 import com.restqueue.framework.service.resourcedelegate.ChannelResourceDelegate;
@@ -72,10 +74,14 @@ public abstract class AbstractQueueResource {
     }
 
     private Response getChannelSummaryAsType(String asType) {
+        registerWithChannelsRegistry();
         final ServiceRequest serviceRequest=new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(asType).build();
         return ServiceResponseTransform.httpResponseFromServiceResponse(channelResourceDelegate.getChannelSummaryAsType(serviceRequest));
     }
 
+    private void registerWithChannelsRegistry(){
+        ChannelsRegistry.getInstance().addChannel(getConcreteResourceClass(),new ChannelMetadata(getConcreteResourceClass(), getImplementedResourceUrl()));
+    }
 
     //GET methods for whole channel contents, public and private
 
@@ -101,6 +107,7 @@ public abstract class AbstractQueueResource {
     }
 
     private Response getChannelContentsAsType(String asType, HttpHeaders headers) {
+        registerWithChannelsRegistry();
         final ServiceHeaders serviceHeaders= ServiceHeadersTransform.serviceHeadersFromHttpHeaders(headers);
         final ServiceRequest serviceRequest=new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(asType).setServiceHeaders(serviceHeaders).build();
         return ServiceResponseTransform.httpResponseFromServiceResponse(channelResourceDelegate.getChannelContentsAsType(serviceRequest));
@@ -123,6 +130,7 @@ public abstract class AbstractQueueResource {
     }
 
     private Response addMessageToChannelAsType(final String requestBody, final String asType, HttpHeaders headers) throws URISyntaxException {
+        registerWithChannelsRegistry();
         final ServiceHeaders serviceHeaders= ServiceHeadersTransform.serviceHeadersFromHttpHeaders(headers);
         final ServiceRequest serviceRequest=new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(asType).setBody(requestBody).setServiceHeaders(serviceHeaders).build();
         return ServiceResponseTransform.httpResponseFromServiceResponse(channelResourceDelegate.addMessageToChannelAsType(serviceRequest));
@@ -871,6 +879,104 @@ public abstract class AbstractQueueResource {
         return ServiceResponseTransform.httpResponseFromServiceResponse(channelResourceDelegate.unRegisterMessageListener(serviceRequest));
     }
 
+    //GET methods to lookup message listeners
+    @GET
+    @Path("/registration/unreserved/messagelisteners")
+    @Produces(MediaType.APPLICATION_XML)
+    public Response getMessageListenersForUnreservedAsXml(@Context HttpHeaders headers) throws URISyntaxException {
+        return getMessageListenersForUnreservedAsType(MediaType.APPLICATION_XML, headers);
+    }
+
+    @GET
+    @Path("/registration/unreserved/messagelisteners")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getMessageListenersForUnreservedAsJson(@Context HttpHeaders headers) throws URISyntaxException {
+        return getMessageListenersForUnreservedAsType(MediaType.APPLICATION_JSON, headers);
+    }
+
+    @GET
+    @Path("/registration/unreserved/messagelisteners")
+    @Produces(MediaType.TEXT_HTML)
+    public Response getMessageListenersForUnreservedAsXhtml(@Context HttpHeaders headers) throws URISyntaxException {
+        return getMessageListenersForUnreservedAsType(MediaType.TEXT_HTML, headers);
+    }
+
+    private Response getMessageListenersForUnreservedAsType(final String asType, HttpHeaders headers) throws URISyntaxException {
+        final ServiceHeaders serviceHeaders= ServiceHeadersTransform.serviceHeadersFromHttpHeaders(headers);
+        final ServiceRequest.ServiceRequestBuilder serviceRequestBuilder = new ServiceRequest.ServiceRequestBuilder();
+        serviceRequestBuilder.addParameter("registrationUrl","/registration/unreserved/messagelisteners");
+        final ServiceRequest serviceRequest= serviceRequestBuilder.setMediaTypeRequested(asType).setServiceHeaders(serviceHeaders).build();
+        return ServiceResponseTransform.httpResponseFromServiceResponse(channelResourceDelegate.getMessageListeners(serviceRequest));
+    }
+
+    //PUT methods to register message listeners
+
+    @PUT
+    @Path("/registration/unreserved/messagelisteners/{listenerId}")
+    @Produces(MediaType.APPLICATION_XML)
+    public Response registerMessageListenerForUnreservedAsXml(@PathParam("listenerId") final String listenerId, @Context HttpHeaders headers) throws URISyntaxException {
+        return registerMessageListenerForUnreservedAsType(MediaType.APPLICATION_XML, headers, listenerId);
+    }
+
+    @PUT
+    @Path("/registration/unreserved/messagelisteners/{listenerId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response registerMessageListenerForUnreservedAsJson(@PathParam("listenerId") final String listenerId, @Context HttpHeaders headers) throws URISyntaxException {
+        return registerMessageListenerForUnreservedAsType(MediaType.APPLICATION_JSON, headers, listenerId);
+    }
+
+    @PUT
+    @Path("/registration/unreserved/messagelisteners/{listenerId}")
+    @Produces(MediaType.TEXT_HTML)
+    public Response registerMessageListenerForUnreservedAsXhtml(@PathParam("listenerId") final String listenerId, @Context HttpHeaders headers) throws URISyntaxException {
+        return registerMessageListenerForUnreservedAsType(MediaType.TEXT_HTML, headers, listenerId);
+    }
+
+    private Response registerMessageListenerForUnreservedAsType(final String asType, HttpHeaders headers, final String listenerId) throws URISyntaxException {
+        final ServiceHeaders serviceHeaders= ServiceHeadersTransform.serviceHeadersFromHttpHeaders(headers);
+        final ServiceRequest.ServiceRequestBuilder serviceRequestBuilder = new ServiceRequest.ServiceRequestBuilder();
+        serviceRequestBuilder.addParameter("messageListenerId",listenerId);
+        serviceRequestBuilder.addParameter("fullRegistrationUrl","/registration/unreserved/messagelisteners/"+listenerId);
+        serviceRequestBuilder.addParameter("registrationUrl","/registration/unreserved/messagelisteners");
+        serviceRequestBuilder.addParameter("registrationPoint", RegistrationPoint.UNRESERVED.name());
+        final ServiceRequest serviceRequest= serviceRequestBuilder.setMediaTypeRequested(asType).setServiceHeaders(serviceHeaders).build();
+        return ServiceResponseTransform.httpResponseFromServiceResponse(channelResourceDelegate.registerMessageListener(serviceRequest));
+    }
+
+    //DELETE methods to unRegister message listeners
+
+    @DELETE
+    @Path("/registration/unreserved/messagelisteners/{listenerId}")
+    @Produces(MediaType.APPLICATION_XML)
+    public Response unRegisterMessageListenerForUnreservedAsXml(@PathParam("listenerId") final String listenerId, @Context HttpHeaders headers) throws URISyntaxException {
+        return unRegisterMessageListenerForUnreservedAsType(MediaType.APPLICATION_XML, headers, listenerId);
+    }
+
+    @DELETE
+    @Path("/registration/unreserved/messagelisteners/{listenerId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response unRegisterMessageListenerForUnreservedAsJson(@PathParam("listenerId") final String listenerId, @Context HttpHeaders headers) throws URISyntaxException {
+        return unRegisterMessageListenerForUnreservedAsType(MediaType.APPLICATION_JSON, headers, listenerId);
+    }
+
+    @DELETE
+    @Path("/registration/unreserved/messagelisteners/{listenerId}")
+    @Produces(MediaType.TEXT_HTML)
+    public Response unRegisterMessageListenerForUnreservedAsXhtml(@PathParam("listenerId") final String listenerId, @Context HttpHeaders headers) throws URISyntaxException {
+        return unRegisterMessageListenerForUnreservedAsType(MediaType.TEXT_HTML, headers, listenerId);
+    }
+
+    private Response unRegisterMessageListenerForUnreservedAsType(final String asType, HttpHeaders headers, final String listenerId) throws URISyntaxException {
+        final ServiceHeaders serviceHeaders= ServiceHeadersTransform.serviceHeadersFromHttpHeaders(headers);
+        final ServiceRequest.ServiceRequestBuilder serviceRequestBuilder = new ServiceRequest.ServiceRequestBuilder();
+        serviceRequestBuilder.addParameter("messageListenerId",listenerId);
+        serviceRequestBuilder.addParameter("registrationUrl","/registration/unreserved/messagelisteners");
+        final ServiceRequest serviceRequest= serviceRequestBuilder.setMediaTypeRequested(asType).setServiceHeaders(serviceHeaders).build();
+        return ServiceResponseTransform.httpResponseFromServiceResponse(channelResourceDelegate.unRegisterMessageListener(serviceRequest));
+    }
+
+
+
     @GET
     @Path("/shutdownconfirmation")
     @Produces(MediaType.TEXT_HTML)
@@ -879,5 +985,4 @@ public abstract class AbstractQueueResource {
                 channelResourceDelegate.getShutdownConfirmPage(
                         new ServiceRequest.ServiceRequestBuilder().setMediaTypeRequested(MediaType.TEXT_HTML).build()));
     }
-
 }

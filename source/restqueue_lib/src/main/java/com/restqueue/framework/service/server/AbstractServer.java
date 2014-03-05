@@ -2,6 +2,7 @@ package com.restqueue.framework.service.server;
 
 import com.restqueue.common.arguments.ArgumentMetaData;
 import com.restqueue.common.arguments.ServerArguments;
+import com.restqueue.framework.service.notification.AsynchronousNotification;
 import com.restqueue.framework.service.persistence.AsynchronousPersistence;
 import com.sun.grizzly.http.SelectorThread;
 import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
@@ -44,6 +45,7 @@ public abstract class AbstractServer {
     public static final String HEAD_LESS = "h";
 
     private Thread persistenceThread;
+    private Thread notificationThread;
 
     public void startUpServer(String[] arguments) throws IOException {
         allowedArguments.add(new ArgumentMetaData(HEAD_LESS,"Headless", ArgumentMetaData.ArgumentMetaDataType.BOOLEAN, true, null));
@@ -65,6 +67,11 @@ public abstract class AbstractServer {
             persistenceThread = new Thread(persistence);
             persistenceThread.start();
         }
+
+        //start notification thread
+        notificationThread = new Thread(AsynchronousNotification.getInstance());
+
+        notificationThread.start();
 
         final String baseUri = "http://localhost:" + PORT + "/";
         final Map<String, String> initParameters =
@@ -105,8 +112,12 @@ public abstract class AbstractServer {
         ServerKillSwitch.getInstance().killServer();
 
         if(persistenceThread!=null){
+            AsynchronousPersistence.getInstance().stopPersistence();
             persistenceThread.interrupt();
         }
+
+        AsynchronousNotification.getInstance().stopNotification();
+        notificationThread.interrupt();
 
         onShutDown();
 

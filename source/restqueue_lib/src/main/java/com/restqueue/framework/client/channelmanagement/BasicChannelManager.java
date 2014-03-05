@@ -440,6 +440,18 @@ public class BasicChannelManager {
         }
     }
 
+    public ConditionalPutResult registerMessageListener(String listenerId, ReturnAddress returnAddress) {
+        return registerMessageListener(listenerId, returnAddress, null, null, false);
+    }
+
+    public ConditionalPutResult registerUnreservedMessageListener(String listenerId, ReturnAddress returnAddress) {
+        return registerMessageListener(listenerId, returnAddress, null, null, true);
+    }
+
+    public ConditionalPutResult registerMessageListener(String listenerId, ReturnAddress returnAddress, String batchId, String priority) {
+        return registerMessageListener(listenerId, returnAddress, batchId, priority, false);
+    }
+
     /**
      * This will register a new message listener onto the channel. You can optionally set a batchId OR a priority
      * (but it is invalid to specify both).
@@ -448,9 +460,10 @@ public class BasicChannelManager {
      * @param returnAddress The return address specifying the method of contacting the listener and the address to use
      * @param batchId The optional batchID
      * @param priority The optional priority
+     * @param unreserved The optional unreserved boolean
      * @return The result of the registration giving you access to the http response code and error information
      */
-    public ConditionalPutResult registerMessageListener(String listenerId, ReturnAddress returnAddress, String batchId, String priority) {
+    public ConditionalPutResult registerMessageListener(String listenerId, ReturnAddress returnAddress, String batchId, String priority, Boolean unreserved) {
         try {
             if (batchId != null && priority != null) {
                 throw new IllegalArgumentException("BatchId and priority cannot both be set. Just set one or the other or none.");
@@ -461,6 +474,9 @@ public class BasicChannelManager {
             }
             if (priority != null) {
                 qualifier = "/priority/" + priority;
+            }
+            if(unreserved){
+                qualifier = "/unreserved";
             }
             final String fullChannelEndpoint = URLUtils.renderFullUrlFromIpAddressAndPort(serverIpAddress, serverPort, channelEndpoint) +
                     "/registration" + qualifier + "/messagelisteners/" + listenerId;
@@ -487,6 +503,18 @@ public class BasicChannelManager {
         }
     }
 
+    public ExecutionResult unRegisterMessageListener(String listenerId) {
+        return unRegisterMessageListener(listenerId, null, null, false);
+    }
+
+    public ExecutionResult unRegisterUnreservedMessageListener(String listenerId) {
+        return unRegisterMessageListener(listenerId, null, null, true);
+    }
+
+    public ExecutionResult unRegisterMessageListener(String listenerId, String batchId, String priority) {
+        return unRegisterMessageListener(listenerId, batchId, priority, false);
+    }
+
     /**
      * This will delete (unregister) a message listener from a channel. You can optionally set a batchId OR a priority
      * (but it is invalid to specify both).
@@ -494,9 +522,10 @@ public class BasicChannelManager {
      * @param listenerId The unique identifier with which you identify the listener
      * @param batchId The optional batchID
      * @param priority The optional priority
+     * @param unreserved The optional unreserved boolean
      * @return The result of the un-registration giving you access to the http response code and error information
      */
-    public ExecutionResult unRegisterMessageListener(String listenerId, String batchId, String priority) {
+    public ExecutionResult unRegisterMessageListener(String listenerId, String batchId, String priority, Boolean unreserved) {
         try {
             if (batchId != null && priority != null) {
                 throw new IllegalArgumentException("BatchId and priority cannot both be set. Just set one or the other or none.");
@@ -507,6 +536,9 @@ public class BasicChannelManager {
             }
             if (priority != null) {
                 qualifier = "/priority/" + priority;
+            }
+            if(unreserved){
+                qualifier = "/unreserved";
             }
             final String fullChannelEndpoint = URLUtils.renderFullUrlFromIpAddressAndPort(serverIpAddress, serverPort, channelEndpoint) +
                     "/registration" + qualifier + "/messagelisteners/" + listenerId;

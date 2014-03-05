@@ -41,11 +41,11 @@ public class ChannelResourceDelegateTest {
     @BeforeClass
     public static void setupClass() {
         final List<ArgumentMetaData> allowedArguments=new ArrayList<ArgumentMetaData>();
-        allowedArguments.add(new ArgumentMetaData(AbstractServer.SPECIFIED_PORT_SWITCH,"Port", ArgumentMetaData.ArgumentMetaDataType.INTEGER, AbstractServer.PORT));
-        allowedArguments.add(new ArgumentMetaData(AbstractServer.NO_CACHE_SWITCH,"No Cache", ArgumentMetaData.ArgumentMetaDataType.BOOLEAN, false));
-        allowedArguments.add(new ArgumentMetaData(AbstractServer.SPECIFIED_PERSISTENCE_SWITCH, "Persistence", ArgumentMetaData.ArgumentMetaDataType.STRING, "Normal"));
+        allowedArguments.add(new ArgumentMetaData(AbstractServer.SPECIFIED_PORT_SWITCH,"Port", ArgumentMetaData.ArgumentMetaDataType.INTEGER, AbstractServer.PORT, null));
+        allowedArguments.add(new ArgumentMetaData(AbstractServer.NO_CACHE_SWITCH,"No Cache", ArgumentMetaData.ArgumentMetaDataType.BOOLEAN, false, null));
+        allowedArguments.add(new ArgumentMetaData(AbstractServer.SPECIFIED_PERSISTENCE_SWITCH, "Persistence", ArgumentMetaData.ArgumentMetaDataType.STRING, "Normal", null));
         allowedArguments.add(new ArgumentMetaData(AbstractServer.SPECIFIED_PERSISTENCE_FREQUENCY_SWITCH, "Persistence Frequency in seconds",
-                ArgumentMetaData.ArgumentMetaDataType.INTEGER, 30000));
+                ArgumentMetaData.ArgumentMetaDataType.INTEGER, 30000, null));
 
         ServerArguments.createInstance(allowedArguments, new String[]{});
     }

@@ -7,7 +7,7 @@ package com.restqueue.framework.service.server;
  */
 public class ServerKillSwitch {
     private static final Object lock = new Object();
-    private static ServerKillSwitch instance = new ServerKillSwitch();
+    private static volatile ServerKillSwitch instance = new ServerKillSwitch();
 
     private volatile boolean serverSetToStop =false;
 

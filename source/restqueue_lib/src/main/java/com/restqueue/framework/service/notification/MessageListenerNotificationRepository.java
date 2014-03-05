@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public final class MessageListenerNotificationRepository {
     private static final Object LOCK = new Object();
-    private static Map<Class, MessageListenerNotification> messageListenerNotificationMap = new HashMap<Class, MessageListenerNotification>();
+    private static final Map<Class, MessageListenerNotification> messageListenerNotificationMap = new HashMap<Class, MessageListenerNotification>();
 
     public static MessageListenerNotification getOrCreateNotificationInstance(Class clazz) {
         if (messageListenerNotificationMap.get(clazz) == null) {

@@ -18,5 +18,5 @@ package com.restqueue.framework.service.notification;
  * Time: 21:58
  */
 public enum RegistrationPoint {
-    SPECIFIC_BATCH,SPECIFIC_PRIORITY,ALL
+    SPECIFIC_BATCH,SPECIFIC_PRIORITY,ALL,UNRESERVED
 }

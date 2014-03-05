@@ -26,6 +26,11 @@ import java.util.List;
 public class AllUnreservedFilter implements BackingStoreFilter{
     private BackingStoreFilter nextFilter;
 
+    //needed for deserialising
+    public AllUnreservedFilter() {
+        this.nextFilter=new ArrivalOrderFilter();
+    }
+
     public AllUnreservedFilter(BackingStoreFilter nextFilter) {
         this.nextFilter = nextFilter;
     }

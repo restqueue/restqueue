@@ -188,7 +188,15 @@ public class BasicMessageConsumer {
         }
 
         if(!conditionalPutResult.isSuccess()){
-            throw new ChannelClientException("Could not reserve message", ChannelClientException.ExceptionType.UNKNOWN);
+            if(conditionalPutResult.getResponseCode()==404){
+                throw new ChannelClientException("Could not reserve message:URL not found", ChannelClientException.ExceptionType.URL_NOT_FOUND);
+            }
+            if(conditionalPutResult.getResponseCode()==412){
+                throw new ChannelClientException("Could not reserve message:Precondition failed (incorrect eTag header)", ChannelClientException.ExceptionType.PRECONDITION_FAILED);
+            }
+
+            throw new ChannelClientException("Could not reserve message:"+conditionalPutResult.getException().getMessage(),
+                    ChannelClientException.ExceptionType.UNKNOWN);
         }
 
     }

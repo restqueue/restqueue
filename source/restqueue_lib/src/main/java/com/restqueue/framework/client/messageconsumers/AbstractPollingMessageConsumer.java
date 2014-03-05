@@ -38,6 +38,7 @@ public abstract class AbstractPollingMessageConsumer extends Thread {
     private volatile String channelEndpoint;
     private volatile String serverIpAddress = "localhost";
     private volatile Integer serverPort = AbstractServer.PORT;
+    private boolean conditionalGet=true;
 
     public void setMessageConsumerId(final String id){
         this.messageConsumerId=id;
@@ -98,9 +99,11 @@ public abstract class AbstractPollingMessageConsumer extends Thread {
         String lastETag=null;
 
         while(pollingEnabled){
-            basicMessageConsumer.setETag(lastETag);
+            if(conditionalGet){
+                basicMessageConsumer.setETag(lastETag);
+            }
             List<EntrySummary> allMessages = basicMessageConsumer.getAllMessages();
-            if(basicMessageConsumer.haveContentsChanged() && !allMessages.isEmpty()){
+            if(!allMessages.isEmpty()){
                 lastETag=basicMessageConsumer.getResponseETag();
                 log.info("There are messages on channel "+channelEndpoint+" - processing!");
                 processMessages(allMessages);
@@ -145,5 +148,9 @@ public abstract class AbstractPollingMessageConsumer extends Thread {
         if(serverPort!=null){
             this.serverPort = serverPort;
         }
+    }
+
+    public void setConditionalGet(boolean conditionalGet) {
+        this.conditionalGet = conditionalGet;
     }
 }

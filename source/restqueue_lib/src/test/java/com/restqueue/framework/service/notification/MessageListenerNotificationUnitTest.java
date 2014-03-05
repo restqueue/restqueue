@@ -47,11 +47,11 @@ public class MessageListenerNotificationUnitTest {
     @BeforeClass
     public static void setupClass() {
         final List<ArgumentMetaData> allowedArguments=new ArrayList<ArgumentMetaData>();
-        allowedArguments.add(new ArgumentMetaData(AbstractServer.SPECIFIED_PORT_SWITCH,"Port", ArgumentMetaData.ArgumentMetaDataType.INTEGER, AbstractServer.PORT));
-        allowedArguments.add(new ArgumentMetaData(AbstractServer.NO_CACHE_SWITCH,"No Cache", ArgumentMetaData.ArgumentMetaDataType.BOOLEAN, false));
-        allowedArguments.add(new ArgumentMetaData(AbstractServer.SPECIFIED_PERSISTENCE_SWITCH, "Persistence", ArgumentMetaData.ArgumentMetaDataType.STRING, "Normal"));
+        allowedArguments.add(new ArgumentMetaData(AbstractServer.SPECIFIED_PORT_SWITCH,"Port", ArgumentMetaData.ArgumentMetaDataType.INTEGER, AbstractServer.PORT, null));
+        allowedArguments.add(new ArgumentMetaData(AbstractServer.NO_CACHE_SWITCH,"No Cache", ArgumentMetaData.ArgumentMetaDataType.BOOLEAN, false, null));
+        allowedArguments.add(new ArgumentMetaData(AbstractServer.SPECIFIED_PERSISTENCE_SWITCH, "Persistence", ArgumentMetaData.ArgumentMetaDataType.STRING, "Normal", null));
         allowedArguments.add(new ArgumentMetaData(AbstractServer.SPECIFIED_PERSISTENCE_FREQUENCY_SWITCH, "Persistence Frequency in seconds",
-                ArgumentMetaData.ArgumentMetaDataType.INTEGER, 30000));
+                ArgumentMetaData.ArgumentMetaDataType.INTEGER, 30000, null));
 
         ServerArguments.createInstance(allowedArguments, new String[]{});
     }
@@ -60,14 +60,14 @@ public class MessageListenerNotificationUnitTest {
     public void clearOutRegistrations(){
         final MessageListenerNotification messageListenerNotification = MessageListenerNotificationRepository.getOrCreateNotificationInstance(MessageListenerNotificationUnitTest.class);
         messageListenerNotification.registeredMessageListeners.clear();
-        messageListenerNotification.messageListenerGroupRegistration.clear();
+        messageListenerNotification.messageListenerGroupsMapByUrl.clear();
     }
 
     @Test
     public void listenerNotificationShouldRegisterOneListenerCorrectly(){
         final MessageListenerNotification messageListenerNotification = MessageListenerNotification.createInstance(MessageListenerNotificationUnitTest.class);
 
-        assertTrue(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertTrue(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertTrue(messageListenerNotification.registeredMessageListeners.isEmpty());
 
         final MessageListenerAddress address = new MessageListenerAddress();
@@ -76,12 +76,12 @@ public class MessageListenerNotificationUnitTest {
 
         messageListenerNotification.registerMessageListener(address, TEST_URL_ONE, RegistrationPoint.ALL, new Object[0]);
 
-        assertFalse(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertFalse(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertFalse(messageListenerNotification.registeredMessageListeners.isEmpty());
-        assertNotNull(messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE));
+        assertNotNull(messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE));
         assertNotNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_ONE));
         assertEquals(1, messageListenerNotification.registeredMessageListeners.size());
-        assertEquals(1, messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE).getListenerIds().size());
+        assertEquals(1, messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE).getListenerIds().size());
 
         assertEquals(TEST_LISTENER_ID_ONE, messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_ONE).getListenerId());
         assertEquals(ReturnAddressType.EMAIL, messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_ONE).getReturnAddress().getType());
@@ -91,7 +91,7 @@ public class MessageListenerNotificationUnitTest {
     public void listenerNotificationShouldRegisterTwoListenersCorrectly(){
         final MessageListenerNotification messageListenerNotification = MessageListenerNotification.createInstance(MessageListenerNotificationUnitTest.class);
 
-        assertTrue(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertTrue(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertTrue(messageListenerNotification.registeredMessageListeners.isEmpty());
 
         final MessageListenerAddress address = new MessageListenerAddress();
@@ -106,12 +106,12 @@ public class MessageListenerNotificationUnitTest {
 
         messageListenerNotification.registerMessageListener(addressTwo, TEST_URL_ONE, RegistrationPoint.ALL, new Object[0]);
 
-        assertFalse(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertFalse(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertFalse(messageListenerNotification.registeredMessageListeners.isEmpty());
-        assertNotNull(messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE));
+        assertNotNull(messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE));
         assertNotNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_TWO));
         assertEquals(2, messageListenerNotification.registeredMessageListeners.size());
-        assertEquals(2, messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE).getListenerIds().size());
+        assertEquals(2, messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE).getListenerIds().size());
 
         assertEquals(TEST_LISTENER_ID_TWO, messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_TWO).getListenerId());
         assertEquals(ReturnAddressType.URL, messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_TWO).getReturnAddress().getType());
@@ -122,7 +122,7 @@ public class MessageListenerNotificationUnitTest {
     public void listenerNotificationShouldUnRegisterTwoListenersCorrectly(){
         final MessageListenerNotification messageListenerNotification = MessageListenerNotification.createInstance(MessageListenerNotificationUnitTest.class);
 
-        assertTrue(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertTrue(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertTrue(messageListenerNotification.registeredMessageListeners.isEmpty());
 
         final MessageListenerAddress address = new MessageListenerAddress();
@@ -137,28 +137,28 @@ public class MessageListenerNotificationUnitTest {
 
         messageListenerNotification.registerMessageListener(addressTwo, TEST_URL_ONE, RegistrationPoint.ALL, new Object[0]);
 
-        assertFalse(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertFalse(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertFalse(messageListenerNotification.registeredMessageListeners.isEmpty());
-        assertNotNull(messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE));
+        assertNotNull(messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE));
         assertNotNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_TWO));
         assertEquals(2, messageListenerNotification.registeredMessageListeners.size());
-        assertEquals(2, messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE).getListenerIds().size());
+        assertEquals(2, messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE).getListenerIds().size());
 
         messageListenerNotification.unRegisterMessageListener(address, TEST_URL_ONE);
 
-        assertFalse(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertFalse(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertFalse(messageListenerNotification.registeredMessageListeners.isEmpty());
-        assertNotNull(messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE));
+        assertNotNull(messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE));
         assertNotNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_TWO));
         assertNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_ONE));
         assertEquals(1, messageListenerNotification.registeredMessageListeners.size());
-        assertEquals(1, messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE).getListenerIds().size());
+        assertEquals(1, messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE).getListenerIds().size());
 
         messageListenerNotification.unRegisterMessageListener(addressTwo, TEST_URL_ONE);
 
-        assertTrue(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertTrue(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertTrue(messageListenerNotification.registeredMessageListeners.isEmpty());
-        assertNull(messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE));
+        assertNull(messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE));
         assertNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_TWO));
         assertNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_ONE));
         assertEquals(0, messageListenerNotification.registeredMessageListeners.size());
@@ -168,7 +168,7 @@ public class MessageListenerNotificationUnitTest {
     public void listenerNotificationShouldUnRegisterOneUnusedListenerCorrectly(){
         final MessageListenerNotification messageListenerNotification = MessageListenerNotification.createInstance(MessageListenerNotificationUnitTest.class);
 
-        assertTrue(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertTrue(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertTrue(messageListenerNotification.registeredMessageListeners.isEmpty());
 
         final MessageListenerAddress address = new MessageListenerAddress();
@@ -177,9 +177,9 @@ public class MessageListenerNotificationUnitTest {
 
         messageListenerNotification.unRegisterMessageListener(address, TEST_URL_ONE);
 
-        assertTrue(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertTrue(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertTrue(messageListenerNotification.registeredMessageListeners.isEmpty());
-        assertNull(messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE));
+        assertNull(messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE));
         assertNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_ONE));
     }    
 
@@ -187,7 +187,7 @@ public class MessageListenerNotificationUnitTest {
     public void listenerNotificationShouldUnRegisterTwoListenersCorrectlyWithMultipleUse(){
         final MessageListenerNotification messageListenerNotification = MessageListenerNotification.createInstance(MessageListenerNotificationUnitTest.class);
 
-        assertTrue(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertTrue(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertTrue(messageListenerNotification.registeredMessageListeners.isEmpty());
 
         final MessageListenerAddress address = new MessageListenerAddress();
@@ -203,33 +203,33 @@ public class MessageListenerNotificationUnitTest {
         messageListenerNotification.registerMessageListener(addressTwo, TEST_URL_ONE, RegistrationPoint.ALL, new Object[0]);
         messageListenerNotification.registerMessageListener(addressTwo, TEST_URL_TWO, RegistrationPoint.ALL, new Object[0]);
 
-        assertFalse(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertFalse(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertFalse(messageListenerNotification.registeredMessageListeners.isEmpty());
-        assertNotNull(messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE));
-        assertNotNull(messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_TWO));
+        assertNotNull(messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE));
+        assertNotNull(messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_TWO));
         assertNotNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_ONE));
         assertNotNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_TWO));
         assertEquals(2, messageListenerNotification.registeredMessageListeners.size());
-        assertEquals(2, messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE).getListenerIds().size());
-        assertEquals(1, messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_TWO).getListenerIds().size());
+        assertEquals(2, messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE).getListenerIds().size());
+        assertEquals(1, messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_TWO).getListenerIds().size());
 
         messageListenerNotification.unRegisterMessageListener(address, TEST_URL_ONE);
 
-        assertFalse(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertFalse(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertFalse(messageListenerNotification.registeredMessageListeners.isEmpty());
-        assertNotNull(messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE));
+        assertNotNull(messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE));
         assertNotNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_TWO));
         assertNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_ONE));
         assertEquals(1, messageListenerNotification.registeredMessageListeners.size());
-        assertEquals(1, messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE).getListenerIds().size());
+        assertEquals(1, messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE).getListenerIds().size());
 
         messageListenerNotification.unRegisterMessageListener(addressTwo, TEST_URL_ONE);
 
-        assertFalse(messageListenerNotification.messageListenerGroupRegistration.isEmpty());
+        assertFalse(messageListenerNotification.messageListenerGroupsMapByUrl.isEmpty());
         assertFalse(messageListenerNotification.registeredMessageListeners.isEmpty());
-        assertNull(messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_ONE));
-        assertNotNull(messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_TWO));
-        assertEquals(1, messageListenerNotification.messageListenerGroupRegistration.get(TEST_URL_TWO).getListenerIds().size());
+        assertNull(messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_ONE));
+        assertNotNull(messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_TWO));
+        assertEquals(1, messageListenerNotification.messageListenerGroupsMapByUrl.get(TEST_URL_TWO).getListenerIds().size());
         assertNotNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_TWO));
         assertNull(messageListenerNotification.registeredMessageListeners.get(TEST_LISTENER_ID_ONE));
         assertEquals(1, messageListenerNotification.registeredMessageListeners.size());
@@ -259,7 +259,7 @@ public class MessageListenerNotificationUnitTest {
     }
 
     @Test
-    public void listenerNotificationShouldCorrectlyNotifyOneOfTwoListeners(){
+    public void listenerNotificationShouldCorrectlyNotifyOneOfTwoListeners() {
         final MessageListenerNotification messageListenerNotification = MessageListenerNotification.createInstance(MessageListenerNotificationUnitTest.class);
 
         final MessageListenerAddress address = new MessageListenerAddress();

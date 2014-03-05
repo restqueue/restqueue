@@ -43,7 +43,7 @@ public class ResultsFactory {
         final String stringBody = extractStringBody(getContentFromResponse(httpResponse));
         creationResult.setBody(stringBody);
         creationResult.setResponseCode(httpResponse.getStatusLine().getStatusCode());
-        if (!creationResult.isSuccess() && stringBody.startsWith("{error")) {
+        if (!creationResult.isSuccess() && stringBody.startsWith("{\"error")) {
             creationResult.setException((HttpResponseErrorBean)new Serializer().fromType(stringBody, MediaType.APPLICATION_JSON));
         }
 
@@ -58,7 +58,7 @@ public class ResultsFactory {
         final String stringBody = extractStringBody(getContentFromResponse(httpResponse));
         conditionalPutResult.setBody(stringBody);
         conditionalPutResult.setResponseCode(httpResponse.getStatusLine().getStatusCode());
-        if (!conditionalPutResult.isSuccess() && stringBody.startsWith("{error")) {
+        if (!conditionalPutResult.isSuccess() && stringBody.startsWith("{\"error")) {
             conditionalPutResult.setException((HttpResponseErrorBean)new Serializer().fromType(stringBody,MediaType.APPLICATION_JSON));
         }
 
@@ -84,7 +84,7 @@ public class ResultsFactory {
             }
         }
 
-        if (!retrievalResult.isSuccess() && stringBody.startsWith("{error")) {
+        if (!retrievalResult.isSuccess() && stringBody.startsWith("{\"error")) {
             retrievalResult.setException((HttpResponseErrorBean)new Serializer().fromType(stringBody,MediaType.APPLICATION_JSON));
         }
 
@@ -97,7 +97,7 @@ public class ResultsFactory {
         executionResult.setSuccess(Response.Status.OK.getStatusCode() == httpResponse.getStatusLine().getStatusCode());
         final String stringBody = extractStringBody(getContentFromResponse(httpResponse));
         executionResult.setResponseCode(httpResponse.getStatusLine().getStatusCode());
-        if (!executionResult.isSuccess() && stringBody.startsWith("{error")) {
+        if (!executionResult.isSuccess() && stringBody.startsWith("{\"error")) {
             executionResult.setException((HttpResponseErrorBean)new Serializer().fromType(stringBody,MediaType.APPLICATION_JSON));
         }
 

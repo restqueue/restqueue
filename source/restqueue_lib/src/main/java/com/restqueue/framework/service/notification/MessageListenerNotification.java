@@ -1,10 +1,8 @@
 package com.restqueue.framework.service.notification;
 
+import com.restqueue.common.utils.DateUtils;
 import com.restqueue.framework.client.common.entryfields.ReturnAddressType;
-import com.restqueue.framework.service.backingstorefilters.ArrivalOrderFilter;
-import com.restqueue.framework.service.backingstorefilters.BackingStoreFilter;
-import com.restqueue.framework.service.backingstorefilters.BatchingFilter;
-import com.restqueue.framework.service.backingstorefilters.SpecificPriorityFilter;
+import com.restqueue.framework.service.backingstorefilters.*;
 import com.restqueue.framework.service.channelstate.ChannelState;
 import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.persistence.*;
@@ -38,7 +36,7 @@ public class MessageListenerNotification {
     private Snapshot snapshot;
 
     protected Map<String, MessageListenerAddress> registeredMessageListeners = new HashMap<String, MessageListenerAddress>();
-    protected Map<String, MessageListenerGroup> messageListenerGroupRegistration = new HashMap<String, MessageListenerGroup>();
+    protected Map<String, MessageListenerGroup> messageListenerGroupsMapByUrl = new HashMap<String, MessageListenerGroup>();
     protected static Map<ReturnAddressType, MessageListenerNotifier> messageListenerNotifiers = new HashMap<ReturnAddressType, MessageListenerNotifier>();
 
     static{
@@ -63,24 +61,24 @@ public class MessageListenerNotification {
 
         final BackingStoreFilter backingStoreFilter = createBackingStoreFilterFromRegistrationPoint(registrationPoint);
 
-        if(messageListenerGroupRegistration.get(registrationUrl)==null){
+        if(messageListenerGroupsMapByUrl.get(registrationUrl)==null){
             final MessageListenerGroup messageListenerGroup = new MessageListenerGroup();
             messageListenerGroup.setBackingStoreFilter(backingStoreFilter);
             messageListenerGroup.setFilterArguments(filterArguments);
 
-            messageListenerGroupRegistration.put(registrationUrl, messageListenerGroup);
+            messageListenerGroupsMapByUrl.put(registrationUrl, messageListenerGroup);
         }
 
-        messageListenerGroupRegistration.get(registrationUrl).addListenerId(messageListenerAddress.getListenerId());
+        messageListenerGroupsMapByUrl.get(registrationUrl).addListenerId(messageListenerAddress.getListenerId());
         save();
     }
 
     public void unRegisterMessageListener(final MessageListenerAddress messageListenerAddress, final String registrationUrl){
-        if (messageListenerGroupRegistration.get(registrationUrl) != null && !messageListenerGroupRegistration.get(registrationUrl).getListenerIds().isEmpty()) {
-            messageListenerGroupRegistration.get(registrationUrl).removeListenerId(messageListenerAddress.getListenerId());
+        if (messageListenerGroupsMapByUrl.get(registrationUrl) != null && !messageListenerGroupsMapByUrl.get(registrationUrl).getListenerIds().isEmpty()) {
+            messageListenerGroupsMapByUrl.get(registrationUrl).removeListenerId(messageListenerAddress.getListenerId());
 
-            if (messageListenerGroupRegistration.get(registrationUrl).getListenerIds().isEmpty()) {
-                messageListenerGroupRegistration.remove(registrationUrl);
+            if (messageListenerGroupsMapByUrl.get(registrationUrl).getListenerIds().isEmpty()) {
+                messageListenerGroupsMapByUrl.remove(registrationUrl);
             }
             cleanUpRegisteredMessageListeners();
             save();
@@ -96,12 +94,15 @@ public class MessageListenerNotification {
         else if(RegistrationPoint.SPECIFIC_PRIORITY.equals(registrationPoint)){
             filter = new SpecificPriorityFilter();
         }
+        else if(RegistrationPoint.UNRESERVED.equals(registrationPoint)){
+            filter = new AllUnreservedFilter(new ArrivalOrderFilter());
+        }
         return filter;
     }
 
     private void cleanUpRegisteredMessageListeners(){
         final Set<String> allRegisteredActiveMessageListeners = new HashSet<String>();
-        for (MessageListenerGroup messageListenerGroup : messageListenerGroupRegistration.values()) {
+        for (MessageListenerGroup messageListenerGroup : messageListenerGroupsMapByUrl.values()) {
             allRegisteredActiveMessageListeners.addAll(messageListenerGroup.getListenerIds());
         }
 
@@ -118,15 +119,28 @@ public class MessageListenerNotification {
         }
     }
 
-    public void notifyMessageListeners(final EntryWrapper entryWrapper, final ChannelState channelState){
+    public boolean notifyMessageListeners(final EntryWrapper entryWrapper, final ChannelState channelState){
         final Set<String> listenersToBeNotified = new HashSet<String>();
 
-        for (MessageListenerGroup messageListenerGroup : messageListenerGroupRegistration.values()) {
+        //if the message has not expired, ignore
+        if (entryWrapper.getDelayUntil() != null && !DateUtils.hasExpired(entryWrapper.getDelayUntil())) {
+            return false;
+        }
+
+        //if the message is not the latest sequence, ignore
+        if (entryWrapper.getSequence()>-1 && entryWrapper.getSequence()!=channelState.getNextMessageSequence()) {
+            return false;
+        }
+
+        for (MessageListenerGroup messageListenerGroup : messageListenerGroupsMapByUrl.values()) {
+            //if the message is of interest to the listener group - add members to notification list
             if(!messageListenerGroup.getBackingStoreFilter().filter(Collections.singletonList(entryWrapper), channelState, messageListenerGroup.getFilterArguments()).isEmpty()){
+                //notification required
                 listenersToBeNotified.addAll(messageListenerGroup.getListenerIds());
             }
         }
 
+        //notify the interested parties
         for (String listenerId : listenersToBeNotified) {
             final MessageListenerAddress listenerToNotify = registeredMessageListeners.get(listenerId);
             final MessageListenerNotifier messageListenerNotifier = messageListenerNotifiers.get(listenerToNotify.getReturnAddress().getType());
@@ -140,18 +154,19 @@ public class MessageListenerNotification {
                         associatedChannelResourceClazz+", please set the notifier implementation and retry.");
             }
         }
+        return true;
     }
 
     private void save(){
         final HashMap<String, Object> changesMap = new HashMap<String, Object>();
         changesMap.put(Persistence.MESSAGE_LISTENERS_KEY, registeredMessageListeners);
-        changesMap.put(Persistence.MESSAGE_LISTENER_REGISTRATION_KEY, messageListenerGroupRegistration);
+        changesMap.put(Persistence.MESSAGE_LISTENER_REGISTRATION_KEY, messageListenerGroupsMapByUrl);
         persistence.saveUpdated(associatedChannelResourceClazz, changesMap);
     }
 
     protected void load() {
         registeredMessageListeners = persistence.loadMessageListeners(associatedChannelResourceClazz);
-        messageListenerGroupRegistration = persistence.loadMessageListenerRegistration(associatedChannelResourceClazz);
+        messageListenerGroupsMapByUrl = persistence.loadMessageListenerRegistration(associatedChannelResourceClazz);
     }
 
     public void setMessageListenerNotifier(ReturnAddressType returnAddressType, MessageListenerNotifier messageListenerNotifier){
@@ -161,11 +176,11 @@ public class MessageListenerNotification {
     }
 
     public Collection<MessageListenerAddress> getMessageListeners(final String registrationUrl) {
-        if(messageListenerGroupRegistration.get(registrationUrl)==null){
+        if(messageListenerGroupsMapByUrl.get(registrationUrl)==null){
             return new ArrayList<MessageListenerAddress>();
         }
 
-        final Set<String> listenerIds = messageListenerGroupRegistration.get(registrationUrl).getListenerIds();
+        final Set<String> listenerIds = messageListenerGroupsMapByUrl.get(registrationUrl).getListenerIds();
 
         final List<MessageListenerAddress> messageListenerAddresses = new ArrayList<MessageListenerAddress>();
         for (String listenerId : listenerIds) {
@@ -176,7 +191,7 @@ public class MessageListenerNotification {
     }
 
     public void takeSnapshot(String fileDateId) {
-        snapshot.takeListenerSnapshot(associatedChannelResourceClazz, registeredMessageListeners, messageListenerGroupRegistration, fileDateId);
+        snapshot.takeListenerSnapshot(associatedChannelResourceClazz, registeredMessageListeners, messageListenerGroupsMapByUrl, fileDateId);
     }
 
     public void restoreFromSnapshot(String snapshotId) {
@@ -187,5 +202,9 @@ public class MessageListenerNotification {
 
         final String message = "Successfully restored listener data from snapshot";
         log.info(message);
+    }
+
+    public String getAssociatedChannelResourceClassName() {
+        return associatedChannelResourceClazz.getName();
     }
 }

@@ -10,9 +10,7 @@ import com.restqueue.framework.service.entrywrapperfactories.EntryWrapperFactory
 import com.restqueue.framework.client.entrywrappers.EntryWrapper;
 import com.restqueue.framework.service.exception.ChannelStoreException;
 import com.restqueue.framework.service.exception.ExceptionRenderer;
-import com.restqueue.framework.service.notification.MessageListenerAddress;
-import com.restqueue.framework.service.notification.MessageListenerNotification;
-import com.restqueue.framework.service.notification.RegistrationPoint;
+import com.restqueue.framework.service.notification.*;
 import com.restqueue.framework.service.server.AbstractServer;
 import com.restqueue.framework.service.transport.ServiceHeaders;
 import com.restqueue.framework.service.transport.ServiceRequest;
@@ -66,6 +64,7 @@ public class ChannelResourceDelegate {
 
     public ServiceResponse getChannelSummaryAsType(final ServiceRequest serviceRequest) {
         final String contentsString = backingStore.getChannelSummaryObject("http://"+localIpAddress()+":"+ AbstractServer.PORT+channelEndPoint,
+                "http://"+localIpAddress()+":"+ AbstractServer.PORT,
                 serviceRequest.getMediaTypeRequested());
         return new ServiceResponse.ServiceResponseBuilder().setBody(contentsString).setReturnCode(200).build();
     }
@@ -122,10 +121,15 @@ public class ChannelResourceDelegate {
                 return new ServiceResponse.ServiceResponseBuilder().setReturnCode(400).
                         setBody(ExceptionRenderer.renderExceptionAsType(cse, serviceRequest.getMediaTypeRequested())).build();
             }
+            else{
+                return new ServiceResponse.ServiceResponseBuilder().setReturnCode(500).setBody(
+                                        ExceptionRenderer.renderExceptionAsType(cse, serviceRequest.getMediaTypeRequested())).build();
+            }
         }
         backingStore.updateChannelState();
 
-        messageListenerNotification.notifyMessageListeners(entryWrapperAdded, backingStore.getChannelState());
+        AsynchronousNotification.getInstance().requestNotification(
+                new NotificationRequest(messageListenerNotification, entryWrapperAdded, backingStore.getChannelState()));
 
         final ServiceHeaders headers = new ServiceHeaders.ServiceHeadersBuilder().
                 addHeader(CustomHeaders.LOCATION, new URI(entryWrapperAdded.getLinkUri()).toString()).
@@ -152,6 +156,10 @@ public class ChannelResourceDelegate {
             if (ChannelStoreException.ExceptionType.ENTRY_NOT_FOUND.equals(cse.getExceptionType())) {
                 return new ServiceResponse.ServiceResponseBuilder().setReturnCode(404).setBody(
                         ExceptionRenderer.renderExceptionAsType(cse, serviceRequest.getMediaTypeRequested())).build();
+            }
+            else{
+                return new ServiceResponse.ServiceResponseBuilder().setReturnCode(500).setBody(
+                                        ExceptionRenderer.renderExceptionAsType(cse, serviceRequest.getMediaTypeRequested())).build();
             }
         }
         final ServiceHeaders.ServiceHeadersBuilder builder = new ServiceHeaders.ServiceHeadersBuilder().addHeader(CustomHeaders.ETAG, entryWrapperToReturn.getETag()).

@@ -34,9 +34,11 @@ public class AsynchronousPersistence extends XmlFilePersistence implements Runna
     private volatile Map<Class,Object> registeredMessageListenersMap = new HashMap<Class, Object>();
     private volatile Map<Class,Object> messageListenerGroupRegistrationMap = new HashMap<Class, Object>();
 
+    private static final Object LOCK = new Object();
+
     private static final Logger log = Logger.getLogger(AsynchronousPersistence.class);
 
-    private static AsynchronousPersistence instance;
+    private static volatile AsynchronousPersistence instance;
 
     private AsynchronousPersistence() {
     }
@@ -111,7 +113,11 @@ public class AsynchronousPersistence extends XmlFilePersistence implements Runna
 
     public static AsynchronousPersistence getInstance(){
         if(instance == null){
-            instance = new AsynchronousPersistence();
+            synchronized (LOCK){
+                if(instance == null){
+                    instance = new AsynchronousPersistence();
+                }
+            }
         }
         return instance;
     }

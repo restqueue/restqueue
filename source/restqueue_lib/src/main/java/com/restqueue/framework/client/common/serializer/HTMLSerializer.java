@@ -31,6 +31,9 @@ import java.util.Map;
 public class HTMLSerializer {
     @SuppressWarnings("unchecked")
     public String serialize(Object object, final String... arguments) {
+        if(object == null && arguments[0].equalsIgnoreCase("otherChannelsList")){
+            return "empty";
+        }
         if(object == null && arguments[0].equalsIgnoreCase("shutdownConfirmation")){
             return serializeShutdownConfirmationPage();
         }
@@ -52,11 +55,15 @@ public class HTMLSerializer {
         stringBuilder.append(">");
 
         addWhiteFontParagraphTag(stringBuilder);
-        stringBuilder.append(object.toString());
+        stringBuilder.append(nullSafeObjectToString(object));
         endParagraphTag(stringBuilder);
         stringBuilder.append("</body></html>");
 
         return stringBuilder.toString();
+    }
+
+    private String nullSafeObjectToString(Object object) {
+        return object==null?"":object.toString();
     }
 
     private String serializeShutdownConfirmationPage(){

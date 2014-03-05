@@ -3,6 +3,7 @@ package com.restqueue.framework.service.persistence;
 import com.restqueue.common.utils.FileUtils;
 import com.restqueue.framework.client.common.serializer.Serializer;
 import com.restqueue.framework.client.entrywrappers.EntryWrapper;
+import com.restqueue.framework.service.channels.ChannelsRegistry;
 import com.restqueue.framework.service.channelstate.ChannelState;
 import com.restqueue.framework.service.server.AbstractServer;
 import org.apache.log4j.Logger;
@@ -123,6 +124,27 @@ public class PersistenceHelper {
         return channelContents;
     }
 
+    @SuppressWarnings("unchecked")
+    protected ChannelsRegistry loadChannelsRegistryFromPath(String pathToUse){
+        ChannelsRegistry channelsRegistry = null;
+        final String restoredContents = FileUtils.restoreFromDisk(pathToUse,"ChannelsRegistry"+getFilenameExtension());
+        if (restoredContents != null) {
+            channelsRegistry = (ChannelsRegistry)new Serializer().fromType(restoredContents, getFilenameExtensionCode());
+        }
+
+        return channelsRegistry;
+    }
+
+    protected void saveChannelsRegistryToPath(String pathToUse, ChannelsRegistry channelsRegistry) {
+        if(FileUtils.saveToDisk(pathToUse, "ChannelsRegistry"+getFilenameExtension(), new Serializer().toType(channelsRegistry, getFilenameExtensionCode()))){
+            log.info("Channels registry saved to disk at:"+
+                    pathToUse + "ChannelsRegistry"+getFilenameExtension());
+        }
+        else{
+            log.info("There was an error saving to disk - the channels registry has not been saved.");
+        }
+    }
+
     protected String simpleNameFolder(final Class associatedChannelResourceClazz){
         return associatedChannelResourceClazz.getSimpleName().replace("Resource","");
     }
@@ -146,4 +168,5 @@ public class PersistenceHelper {
     public String getFilenameExtensionCode() {
         return filenameExtensionCode;
     }
+
 }

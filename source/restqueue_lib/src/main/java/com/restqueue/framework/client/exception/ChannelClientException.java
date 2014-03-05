@@ -21,7 +21,8 @@ package com.restqueue.framework.client.exception;
  * Time: 7:36:55 PM
  */
 public class ChannelClientException extends RuntimeException{
-    public enum ExceptionType {UNKNOWN, TRANSPORT_PROTOCOL, CHARACTER_ENCODING, CONNECTION, BAD_STATE, MISSING_DATA}
+    public enum ExceptionType {UNKNOWN, TRANSPORT_PROTOCOL, CHARACTER_ENCODING, CONNECTION, BAD_STATE, MISSING_DATA,
+        URL_NOT_FOUND, PRECONDITION_FAILED}
     private ExceptionType exceptionType;
     public ChannelClientException(String s, ExceptionType exceptionType) {
         super(s);

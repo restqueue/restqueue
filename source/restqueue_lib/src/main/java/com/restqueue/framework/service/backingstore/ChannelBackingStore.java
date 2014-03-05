@@ -47,6 +47,7 @@ public final class ChannelBackingStore {
     private int maxSize=-1;
     private Class associatedChannelResourceClazz;
     private long lastUpdated;
+    private static final Object LOCK = new Object();
 
     private static final Logger log = Logger.getLogger(ChannelBackingStore.class);
 
@@ -73,13 +74,16 @@ public final class ChannelBackingStore {
 
     public EntryWrapper add(EntryWrapper objectToAdd) {
         if(getMaxSize()>=0){
-            if(getMaxSize()<=backingList.size()){
+            if(getMaxSize()<=getBackingListSize()){
                 throw new ChannelStoreException("Channel Backing Store must not exceed "+getMaxSize()+" items!",
                         ChannelStoreException.ExceptionType.CHANNEL_STORE_MAX_CAPACITY);
             }
         }
 
-        final EntryWrapper entryWrapperAdded = backingStoreDuplicatesFilter.add(objectToAdd, backingList);
+        final EntryWrapper entryWrapperAdded;
+        synchronized (LOCK){
+            entryWrapperAdded = backingStoreDuplicatesFilter.add(objectToAdd, backingList);
+        }
 
         if(objectToAdd.getBatchKey()!=null){
             channelState.addBatchId(objectToAdd.getBatchKey().getBatchId());
@@ -94,7 +98,7 @@ public final class ChannelBackingStore {
 
     public void remove(String entryWrapperId) {
         final EntryWrapper entryWrapperToRemove = getSpecificEntry(entryWrapperId);
-        backingList.remove(entryWrapperToRemove);
+        removeFromBackingList(entryWrapperToRemove);
 
         if(entryWrapperToRemove.getBatchKey()!=null){
             boolean removeBatchKeyFromCurrentBatchKeyList=true;
@@ -114,8 +118,10 @@ public final class ChannelBackingStore {
         persist();
     }
 
-    public int getSize() {
-        return backingList.size();
+    public int getBackingListSize() {
+        synchronized (LOCK){
+            return backingList.size();
+        }
     }
 
     public int getMaxSize() {
@@ -129,8 +135,10 @@ public final class ChannelBackingStore {
     private List<EntryWrapper> toList(){
         final List<EntryWrapper> list = new ArrayList<EntryWrapper>();
 
-        for(EntryWrapper entry:backingList){
-            list.add(entry);
+        synchronized (LOCK) {
+            for (EntryWrapper entry : backingList) {
+                list.add(entry);
+            }
         }
 
         return list;
@@ -175,11 +183,8 @@ public final class ChannelBackingStore {
     }
 
     @SuppressWarnings("unchecked")
-    public String getChannelSummaryObject(final String channelBaseUrl, final String asType){
+    public String getChannelSummaryObject(final String channelBaseUrl, final String baseUrl, final String asType){
         final List<EndPoint> endPoints = new ArrayList<EndPoint>();
-
-        endPoints.add(new EndPoint.EndPointBuilder().setDescription("Channel Summary").
-                setShortCode("CHANNEL_SUMMARY").setUrl(channelBaseUrl).build());
 
         endPoints.add(new EndPoint.EndPointBuilder().setDescription("Available Channel Contents").
                 setShortCode("AVAILABLE_CHANNEL_CONTENTS").setUrl(channelBaseUrl + "/entries").build());
@@ -213,6 +218,9 @@ public final class ChannelBackingStore {
         endPoints.add(new EndPoint.EndPointBuilder().setDescription("Message Listeners").
                 setShortCode("MESSAGE_LISTENERS").setUrl(channelBaseUrl + "/registration/messagelisteners").build());
 
+        endPoints.add(new EndPoint.EndPointBuilder().setDescription("Other Channels").
+                setShortCode("OTHER_CHANNELS").setUrl(baseUrl + "/control/1.0/allchannels").build());
+
         endPoints.add(new EndPoint.EndPointBuilder().setDescription("Shutdown Server").setShortCode("SHUTDOWN_SERVER").
         setUrl(channelBaseUrl+"/shutdownconfirmation").build());
 
@@ -220,7 +228,7 @@ public final class ChannelBackingStore {
     }
 
     public void restoreFromPersistedState(){
-        restoreContentsIntoList(backingList);
+        restoreContentsIntoList();
         restoreState();
     }
 
@@ -229,9 +237,11 @@ public final class ChannelBackingStore {
         setMaxSize((Integer) channelState.getFieldValue(ChannelState.MAX_SIZE_KEY));
     }        
 
-    private void restoreContentsIntoList(final List<EntryWrapper> listToRestoreInto){
-        listToRestoreInto.clear();
-        listToRestoreInto.addAll(persistence.loadChannelContents(associatedChannelResourceClazz));
+    private void restoreContentsIntoList(){
+        synchronized (LOCK){
+            backingList.clear();
+            backingList.addAll(persistence.loadChannelContents(associatedChannelResourceClazz));
+        }
     }
 
     private void restoreContentsSnapshotIntoList(final List<EntryWrapper> listToRestoreInto, String snapshotId){
@@ -256,7 +266,9 @@ public final class ChannelBackingStore {
 
     public String purge(){
         takeSnapshot();
-        backingList.clear();
+        synchronized (LOCK){
+            backingList.clear();
+        }
         persist();
 
         updateChannelState();
@@ -290,7 +302,9 @@ public final class ChannelBackingStore {
                     channelState.put("nextMessageSequence", String.valueOf(entryWrapperToUpdate.getSequence()+1));
                 }
             }
-            backingStoreDuplicatesFilter.updateFromServiceRequest(entryWrapperToUpdate, serviceRequest, backingList);
+            synchronized (LOCK){
+                backingStoreDuplicatesFilter.updateFromServiceRequest(entryWrapperToUpdate, serviceRequest, backingList);
+            }
 
             lastUpdated=System.currentTimeMillis();
 
@@ -301,15 +315,17 @@ public final class ChannelBackingStore {
     }
 
     public void updateChannelState(){
-        channelState.refreshChannelState(getSize(), getMaxSize());
+        channelState.refreshChannelState(getBackingListSize(), getMaxSize());
         updateCurrentBatchIds();
     }
 
     public void updateCurrentBatchIds() {
         channelState.clearBatchIds();
-        for (EntryWrapper entryWrapper : backingList) {
-            if (entryWrapper.getBatchKey() != null) {
-                channelState.addBatchId(entryWrapper.getBatchKey().getBatchId());
+        synchronized (LOCK) {
+            for (EntryWrapper entryWrapper : backingList) {
+                if (entryWrapper.getBatchKey() != null) {
+                    channelState.addBatchId(entryWrapper.getBatchKey().getBatchId());
+                }
             }
         }
     }
@@ -430,5 +446,17 @@ public final class ChannelBackingStore {
             }
         }
         return false;
+    }
+
+    private void addToBackingList(EntryWrapper entryWrapper){
+        synchronized (LOCK){
+            backingList.add(entryWrapper);
+        }
+    }
+
+    private void removeFromBackingList(EntryWrapper entryWrapper){
+        synchronized (LOCK){
+            backingList.remove(entryWrapper);
+        }
     }
 }

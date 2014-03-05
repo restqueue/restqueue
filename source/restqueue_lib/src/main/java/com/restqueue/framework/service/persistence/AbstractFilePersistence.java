@@ -3,6 +3,7 @@ package com.restqueue.framework.service.persistence;
 import com.restqueue.common.utils.FileUtils;
 import com.restqueue.framework.client.common.serializer.Serializer;
 import com.restqueue.framework.client.entrywrappers.EntryWrapper;
+import com.restqueue.framework.service.channels.ChannelsRegistry;
 import com.restqueue.framework.service.channelstate.ChannelState;
 import com.restqueue.framework.service.notification.MessageListenerAddress;
 import com.restqueue.framework.service.notification.MessageListenerGroup;
@@ -122,5 +123,15 @@ public abstract class AbstractFilePersistence implements Persistence {
     public List<EntryWrapper> loadChannelContents(final Class associatedChannelResourceClazz){
         final String fullFilePath = persistenceHelper.fillOutPath(PersistenceHelper.CONTENTS_BASE_FOLDER, associatedChannelResourceClazz, null);
         return persistenceHelper.loadChannelContentsFromPath(associatedChannelResourceClazz, fullFilePath);
+    }
+
+    public ChannelsRegistry loadChannelsRegistry(){
+        final String fullFilePath = PersistenceHelper.BASE_FOLDER;
+        return persistenceHelper.loadChannelsRegistryFromPath(fullFilePath);
+    }
+
+    public void saveChannelsRegistry(ChannelsRegistry channelsRegistry) {
+        final String fullFilePath = PersistenceHelper.BASE_FOLDER;
+        persistenceHelper.saveChannelsRegistryToPath(fullFilePath, channelsRegistry);
     }
 }

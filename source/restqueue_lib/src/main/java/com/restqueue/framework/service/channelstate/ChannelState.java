@@ -49,7 +49,7 @@ public class ChannelState {
 
         map.put(NEXT_MESSAGE_SEQUENCE_KEY, 0L);
         map.put(SIZE_KEY, 0);
-        map.put(MAX_SIZE_KEY, 100);
+        map.put(MAX_SIZE_KEY, 10000);
         map.put(PRIORITY_MAP, defaultPriorityMap);
         map.put(CURRENT_BATCHES, currentBatchesList);
         map.put(BATCH_STRATEGY, BatchStrategy.ARRIVAL.name());
